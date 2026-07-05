@@ -54,6 +54,7 @@
             font-size: 24px;
             margin-bottom: 2px;
             text-align: center;
+            padding: 0 40px;
         }
         .app-desc {
             font-size: 13px;
@@ -76,7 +77,7 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* ダークモード切り替えボタン（ここだけ絵文字を残しています） */
+        /* ダークモード切り替えボタン */
         .theme-toggle-btn {
             position: absolute;
             top: 5px;
@@ -91,6 +92,25 @@
             width: auto;
             margin: 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        /* 小さなホームボタン(左上) */
+        .home-icon-btn {
+            position: absolute;
+            top: 5px;
+            left: 0;
+            background: var(--box-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            width: auto;
+            margin: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
         }
 
         /* ボタン共通 */
@@ -135,13 +155,14 @@
             font-weight: bold;
             font-size: 16px;
         }
-        .tango-book-item .delete-ico {
-            background: #ffcbd1;
-            color: #c82333;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
+        
+        /* 三点リーダーボタン */
+        .menu-btn {
+            color: var(--text-color);
+            font-size: 20px;
             cursor: pointer;
+            padding: 0 10px;
+            user-select: none;
         }
 
         /* 入力欄 */
@@ -211,11 +232,12 @@
             <div class="section-box">
                 <button class="primary-btn" onclick="showScreen('inputScreen')">新しい単語帳を作る</button>
                 <div id="bookList" style="margin-top: 10px;"></div>
+                <button class="success-btn" onclick="saveAllBooks()" style="margin-top: 10px; margin-bottom: 0;">まとめて保存</button>
             </div>
 
             <h2>端末から追加（バックアップ・共有）</h2>
             <div class="section-box" style="background: var(--file-box-bg);">
-                <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">スマホに保存した単語帳ファイル（.json）を読み込んでアプリに追加します。</p>
+                <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">保存した単語帳ファイル（.json）を読み込んでアプリに追加します。（まとめて保存したファイルもここから戻せます）</p>
                 <button class="info-btn" onclick="triggerFileInput()">ファイルを選択して追加</button>
                 <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
             </div>
@@ -241,9 +263,10 @@
         </div>
 
         <div id="viewScreen" class="screen">
-            <h1 id="viewBookTitle">単語帳の名前</h1>
+            <button class="home-icon-btn" onclick="showScreen('homeScreen')">🏠</button>
+            
+            <h1 id="viewBookTitle" style="margin-top: 40px;">単語帳の名前</h1>
             <p class="app-desc">タップすると裏返ります</p>
-            <button class="secondary-btn" onclick="showScreen('homeScreen')">ホームに戻る</button>
             
             <div class="section-box" style="background: var(--save-box-bg); margin-top: 15px;">
                 <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">この単語帳をファイルとしてスマホに保存（ダウンロード）します。</p>
@@ -266,7 +289,6 @@
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('tangoTheme', newTheme);
             updateThemeButton(newTheme);
@@ -284,6 +306,7 @@
             if (screenId === 'homeScreen') { renderBookList(); }
         }
 
+        // ホームの一覧表示（三点リーダーメニュー化）
         function renderBookList() {
             const bookListDiv = document.getElementById('bookList');
             bookListDiv.innerHTML = '';
@@ -301,21 +324,50 @@
                 nameSpan.style.cursor = 'pointer';
                 nameSpan.onclick = () => openBook(bookName);
                 
-                const delBtn = document.createElement('span');
-                delBtn.className = 'delete-ico';
-                delBtn.innerText = '削除';
-                delBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (confirm(`「${bookName}」をアプリ内から削除しますか？（スマホに保存したファイルは消えません）`)) {
-                        delete allBooks[bookName];
-                        saveData();
-                        renderBookList();
-                    }
+                // 三点リーダーボタン
+                const menuBtn = document.createElement('span');
+                menuBtn.className = 'menu-btn';
+                menuBtn.innerText = '…';
+                menuBtn.onclick = (e) => {
+                    e.stopPropagation(); // 単語帳が開いちゃうのを防ぐ
+                    openMenuPopup(bookName);
                 };
+
                 item.appendChild(nameSpan);
-                item.appendChild(delBtn);
+                item.appendChild(menuBtn);
                 bookListDiv.appendChild(item);
             });
+        }
+
+        // 三点リーダーを押したときの処理
+        function openMenuPopup(bookName) {
+            const action = prompt(`「${bookName}」の操作を選んで数字を入力してください：\n\n1: タイトルを変更する\n2: 削除する\n3: この単語帳単体で保存する`, "1");
+            
+            if (action === "1") {
+                // タイトル変更
+                const newName = prompt("新しい単語帳の名前を入力してください：", bookName);
+                if (newName && newName.trim() !== "" && newName !== bookName) {
+                    if (allBooks[newName]) {
+                        alert("すでに同じ名前の単語帳があります。");
+                        return;
+                    }
+                    allBooks[newName] = allBooks[bookName];
+                    delete allBooks[bookName];
+                    saveData();
+                    renderBookList();
+                    alert("タイトルを変更しました！");
+                }
+            } else if (action === "2") {
+                // 削除
+                if (confirm(`「${bookName}」をアプリ内から削除しますか？`)) {
+                    delete allBooks[bookName];
+                    saveData();
+                    renderBookList();
+                }
+            } else if (action === "3") {
+                // 単体保存
+                saveToFile(bookName);
+            }
         }
 
         function addTempCard() {
@@ -391,14 +443,30 @@
             showScreen('viewScreen');
         }
 
+        // 📤 単体保存：ファイル名は [単語帳の名前].json
         function saveToFile(bookName) {
             const dataStr = JSON.stringify(allBooks[bookName], null, 2);
+            downloadJson(dataStr, `${bookName}.json`);
+        }
+
+        // 📤 まとめて保存：ファイル名は rkrktng.json
+        function saveAllBooks() {
+            const keys = Object.keys(allBooks);
+            if (keys.length === 0) {
+                alert("保存する単語帳がありません。");
+                return;
+            }
+            const dataStr = JSON.stringify(allBooks, null, 2);
+            downloadJson(dataStr, "rkrktng.json");
+        }
+
+        // 共通のダウンロード処理
+        function downloadJson(dataStr, fileName) {
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${bookName}.json`;
+            link.download = fileName;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -409,32 +477,42 @@
             document.getElementById('fileInput').click();
         }
 
+        // 📥 ファイル読み込み（単体ファイル、まとめて保存ファイルの両方に対応）
         function loadFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const bookName = file.name.replace('.json', '');
+            const fileNameNoExt = file.name.replace('.json', '');
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const cards = JSON.parse(e.target.result);
-                    if (!Array.isArray(cards)) {
-                        alert('ファイルの形式が正しくありません。'); return;
-                    }
-
-                    if (allBooks[bookName]) {
-                        if (!confirm(`すでに「${bookName}」という単語帳がアプリ内にあります。上書きしますか？（キャンセルすると合体します）`)) {
-                            allBooks[bookName] = allBooks[bookName].concat(cards);
+                    const imported = JSON.parse(e.target.result);
+                    
+                    if (Array.isArray(imported)) {
+                        // 【単体ファイルの場合】（中身が配列になっている）
+                        if (allBooks[fileNameNoExt]) {
+                            if (!confirm(`すでに「${fileNameNoExt}」という単語帳があります。上書きしますか？（キャンセルすると合体します）`)) {
+                                allBooks[fileNameNoExt] = allBooks[fileNameNoExt].concat(imported);
+                            } else {
+                                allBooks[fileNameNoExt] = imported;
+                            }
                         } else {
-                            allBooks[bookName] = cards;
+                            allBooks[fileNameNoExt] = imported;
+                        }
+                    } else if (typeof imported === 'object' && imported !== null) {
+                        // 【まとめて保存ファイルの場合】（中身が連想配列のオブジェクトになっている）
+                        if (confirm("まとめて保存されたファイルを読み込みます。既存のデータに上書き追加しますか？")) {
+                            allBooks = Object.assign({}, allBooks, imported);
+                        } else {
+                            return;
                         }
                     } else {
-                        allBooks[bookName] = cards;
+                        alert('ファイルの形式が正しくありません。'); return;
                     }
 
                     saveData();
                     renderBookList();
-                    alert(`端末のファイルから「${bookName}」を追加しました！`);
+                    alert("ファイルを読み込みました！");
                 } catch (err) {
                     alert('ファイルの読み込みに失敗しました。');
                 }
