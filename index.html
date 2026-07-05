@@ -3,143 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ガチ文字スキャン単語帳</title>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <title>マイ単語帳マスター</title>
     <style>
         body {
             font-family: sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
+        }
+        .container {
+            width: 100%;
+            max-width: 380px;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 22px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        /* 画面の切り替え用 */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* ボタン共通 */
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.98); }
+        
+        .primary-btn { background-color: #007bff; color: white; }
+        .success-btn { background-color: #28a745; color: white; }
+        .secondary-btn { background-color: #6c757d; color: white; }
+        .danger-btn { background-color: #dc3545; color: white; }
+
+        /* ホーム画面のリスト */
+        .tango-book-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .tango-book-item .delete-ico {
+            background: #ffcbd1;
+            color: #c82333;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 入力エリア */
+        .input-group { margin-bottom: 15px; }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        /* 単語カード表示（閲覧モード） */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
         }
         .card {
-            width: 300px;
-            height: 200px;
             background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             font-weight: bold;
+            text-align: center;
+            padding: 15px;
             cursor: pointer;
             user-select: none;
-            transition: transform 0.2s, background-color 0.3s;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 20px;
             word-break: break-all;
-            overflow-y: auto;
         }
-        .card:active {
-            transform: scale(0.98);
-        }
-        .camera-btn {
-            background-color: #ffc107;
-            color: #212529;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
-        }
-        .camera-btn:active {
-            transform: scale(0.95);
-        }
-        #cameraInput {
-            display: none;
-        }
-        .status-msg {
-            color: #333;
-            font-size: 14px;
-            height: auto;
-            margin-top: 5px;
-            text-align: center;
-            padding: 0 20px;
-        }
+        .card.back { background-color: #fff9c4; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="wordCard" onclick="toggleCard()">
-        本やプリントの文字を撮影してね！
-    </div>
-    
-    <button class="camera-btn" onclick="triggerCamera()">📸 本気で文字スキャン</button>
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="scanImage(event)">
+    <div class="container">
+        <div id="homeScreen" class="screen active">
+            <h1>📚 マイ単語帳ホーム</h1>
+            <button class="primary-btn" onclick="showScreen('inputScreen')">＋ 新しい単語帳を作る</button>
+            <div style="margin-top: 20px; font-size: 14px; color:#666; font-weight:bold;">作った単語帳一覧：</div>
+            <div id="bookList" style="margin-top: 10px;"></div>
+        </div>
 
-    <div class="status-msg" id="statusMsg">ボタンを押してカメラを起動しよう</div>
+        <div id="inputScreen" class="screen">
+            <h1>📝 カードの追加</h1>
+            <div class="input-group">
+                <label>オモテ面（問題など）</label>
+                <input type="text" id="frontInput" placeholder="例: Apple" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>ウラ面（答えなど）</label>
+                <input type="text" id="backInput" placeholder="例: りんご" autocomplete="off">
+            </div>
+            <div style="margin-top: 20px; font-size: 13px; color:#007bff; font-weight:bold; text-align:center;" id="tempCount">まだカードはありません</div>
+            <div style="margin-top: 15px;">
+                <button class="primary-btn" onclick="addTempCard()">追加して次を入力</button>
+                <button class="success-btn" onclick="finishBook()">完了して保存する</button>
+                <button class="secondary-btn" onclick="cancelCreation()">キャンセル</button>
+            </div>
+        </div>
+
+        <div id="viewScreen" class="screen">
+            <h1 id="viewBookTitle">単語帳の名前</h1>
+            <button class="secondary-btn" onclick="showScreen('homeScreen')">🏠 ホームに戻る</button>
+            <div class="card-list" id="viewCardList"></div>
+        </div>
+    </div>
 
     <script>
-        let currentWord = { front: "スキャンしてね", back: "裏面だよ" };
-        let isFront = true;
-        const cardElement = document.getElementById('wordCard');
-        const statusElement = document.getElementById('statusMsg');
+        // スマホの保存データ（LocalStorage）からデータを読み込む
+        // データ構造: { "歴史の単語": [{front:"...", back:"..."}, ...], "英語": [...] }
+        let allBooks = JSON.parse(localStorage.getItem('myTangoData')) || {};
+        
+        // いま新しく作っている途中の単語リスト（一時保存用）
+        let tempCards = [];
 
-        function toggleCard() {
-            if (isFront) {
-                cardElement.innerText = currentWord.back;
-                cardElement.style.backgroundColor = "#fff9c4"; // 裏面は薄い黄色
-                isFront = false;
-            } else {
-                cardElement.innerText = currentWord.front;
-                cardElement.style.backgroundColor = "white";
-                isFront = true;
+        // 画面を切り替える関数
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'homeScreen') {
+                renderBookList();
             }
         }
 
-        function triggerCamera() {
-            document.getElementById('cameraInput').click();
-        }
+        // ホーム画面に単語帳の一覧を表示する
+        function renderBookList() {
+            const bookListDiv = document.getElementById('bookList');
+            bookListDiv.innerHTML = '';
 
-        // 本当に画像から文字を読み取る処理
-        function scanImage(event) {
-            const input = event.target;
-            if (!input.files || !input.files[0]) return;
+            const keys = Object.keys(allBooks);
+            if (keys.length === 0) {
+                bookListDiv.innerHTML = '<p style="text-align:center; color:#999; font-size:14px;">まだ単語帳がありません。</p>';
+                return;
+            }
 
-            statusElement.innerText = "文字を読み取り中...（10秒くらいかかるよ）";
-            cardElement.innerText = "⏳ 読み取り中...";
-            cardElement.style.backgroundColor = "#e3f2fd";
-
-            // Tesseract.jsを起動（日本語 'jpn' と 英語 'eng' を両方指定）
-            Tesseract.recognize(
-                input.files[0],
-                'jpn+eng',
-                { logger: m => {
-                    if(m.status === 'recognizing text') {
-                        statusElement.innerText = `文字を解析中: ${Math.round(m.progress * 100)}%`;
+            keys.forEach(bookName => {
+                const item = document.createElement('div');
+                item.className = 'tango-book-item';
+                
+                // 名前をタップしたら中身を見る
+                const nameSpan = document.createElement('span');
+                nameSpan.innerText = `${bookName} (${allBooks[bookName].length}枚)`;
+                nameSpan.style.cursor = 'pointer';
+                nameSpan.onclick = () => openBook(bookName);
+                
+                // 削除ボタン
+                const delBtn = document.createElement('span');
+                delBtn.className = 'delete-ico';
+                delBtn.innerText = '削除';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation(); // クリックが連鎖しないようにする
+                    if (confirm(`「${bookName}」を完全に削除しますか？`)) {
+                        delete allBooks[bookName];
+                        localStorage.setItem('myTangoData', JSON.stringify(allBooks));
+                        renderBookList();
                     }
-                }}
-            ).then(({ data: { text } }) => {
-                // 文字が何も読めなかった場合の処理
-                if (!text || text.trim() === "") {
-                    text = "文字が見つかりませんでした。もっと近くではっきり撮ってみてね！";
-                }
-
-                // 読み取った文字をカードにセット
-                currentWord = {
-                    front: "📄 読み取った文字",
-                    back: text
                 };
 
-                isFront = true;
-                cardElement.innerText = currentWord.front;
-                cardElement.style.backgroundColor = "white";
-                statusElement.innerText = "スキャン完了！カードをタップして裏面（結果）を見てね！";
-            }).catch(err => {
-                console.error(err);
-                statusElement.innerText = "エラーが発生しました。もう一度試してね。";
-                cardElement.innerText = "❌ 失敗";
+                item.appendChild(nameSpan);
+                item.appendChild(delBtn);
+                bookListDiv.appendChild(item);
             });
         }
+
+        // 「追加して次を入力」ボタンを押したとき
+        function addTempCard() {
+            const front = document.getElementById('frontInput');
+            const back = document.getElementById('backInput');
+
+            if (front.value.trim() === '' || back.value.trim() === '') {
+                alert('オモテとウラの両方を入力してね！');
+                return;
+            }
+
+            // 一時リストに保存
+            tempCards.push({ front: front.value, back: back.value });
+
+            // 入力欄をリセット
+            front.value = '';
+            back.value = '';
+            front.focus();
+
+            document.getElementById('tempCount').innerText = `現在 ${tempCards.length} 枚のカードが追加されています`;
+        }
+
+        // 「完了して保存する」ボタンを押したとき
+        function finishBook() {
+            const front = document.getElementById('frontInput');
+            const back = document.getElementById('backInput');
+
+            // もし入力欄に文字が残っていたら、それも最後にリストに入れてあげる
+            if (front.value.trim() !== '' && back.value.trim() !== '') {
+                tempCards.push({ front: front.value, back: back.value });
+            }
+
+            if (tempCards.length === 0) {
+                alert('最低1枚はカードを追加してね！');
+                return;
+            }
+
+            // 単語帳の名前を聞く
+            const bookName = prompt('この単語帳の名前を入力してください：');
+            if (!bookName || bookName.trim() === '') {
+                alert('名前が入力されなかったため、保存を中止しました。');
+                return;
+            }
+
+            // すでに同じ名前の単語帳があったら合体するか上書きするか聞く
+            if (allBooks[bookName]) {
+                if (!confirm(`「${bookName}」はすでに存在します。中身を追加（合体）しますか？`)) {
+                    return;
+                }
+                allBooks[bookName] = allBooks[bookName].concat(tempCards);
+            } else {
+                allBooks[bookName] = tempCards;
+            }
+
+            // 本物のスマホ保存に書き込む
+            localStorage.setItem('myTangoData', JSON.stringify(allBooks));
+
+            // お片付けしてホームに戻る
+            tempCards = [];
+            front.value = '';
+            back.value = '';
+            document.getElementById('tempCount').innerText = 'まだカードはありません';
+            
+            alert(`単語帳「${bookName}」を保存しました！`);
+            showScreen('homeScreen');
+        }
+
+        function cancelCreation() {
+            if (confirm('作りかけの単語帳を破棄してホームに戻りますか？')) {
+                tempCards = [];
+                document.getElementById('frontInput').value = '';
+                document.getElementById('backInput').value = '';
+                document.getElementById('tempCount').innerText = 'まだカードはありません';
+                showScreen('homeScreen');
+            }
+        }
+
+        // 特定の単語帳を開いて見る画面
+        function openBook(bookName) {
+            document.getElementById('viewBookTitle').innerText = bookName;
+            const cardListDiv = document.getElementById('viewCardList');
+            cardListDiv.innerHTML = '';
+
+            const cards = allBooks[bookName];
+            cards.forEach(word => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerText = word.front;
+
+                let isFront = true;
+                card.onclick = () => {
+                    if (isFront) {
+                        card.innerText = word.back;
+                        card.classList.add('back');
+                        isFront = false;
+                    } else {
+                        card.innerText = word.front;
+                        card.classList.remove('back');
+                        isFront = true;
+                    }
+                };
+                cardListDiv.appendChild(card);
+            });
+
+            showScreen('viewScreen');
+        }
+
+        // 最初の起動時にホーム一覧を表示
+        renderBookList();
     </script>
 
 </body>
