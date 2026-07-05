@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI自動単語帳（お試し版）</title>
+    <title>AI自動単語帳（カメラ版）</title>
     <style>
         body {
             font-family: sans-serif;
@@ -31,14 +31,36 @@
             transition: transform 0.2s;
             padding: 20px;
             text-align: center;
+            margin-bottom: 20px;
         }
         .card:active {
             transform: scale(0.98);
         }
-        .hint {
+        /* カメラボタンの見た目 */
+        .camera-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .camera-btn:active {
+            transform: scale(0.95);
+        }
+        /* 隠し要素（スマホのカメラを呼び出すための仕掛け） */
+        #cameraInput {
+            display: none;
+        }
+        .preview {
             margin-top: 15px;
-            color: #666;
-            font-size: 14px;
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -48,28 +70,47 @@
         Apple
     </div>
     
-    <div class="hint">カードをタップすると意味が変わるよ！</div>
+    <button class="camera-btn" onclick="triggerCamera()">📸 プリントを撮影する</button>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="previewImage(event)">
+
+    <img id="imagePreview" class="preview" alt="撮影した写真">
 
     <script>
-        // 単語のデータ（仮）
-        const wordData = {
-            front: "Apple",
-            back: "りんご"
-        };
-        
+        const wordData = { front: "Apple", back: "りんご" };
         let isFront = true;
         const cardElement = document.getElementById('wordCard');
 
-        // タップしたときに表と裏を切り替える仕組み
         function toggleCard() {
             if (isFront) {
                 cardElement.innerText = wordData.back;
-                cardElement.style.backgroundColor = "#e3f2fd"; // 裏面は薄い青に
+                cardElement.style.backgroundColor = "#e3f2fd";
                 isFront = false;
             } else {
                 cardElement.innerText = wordData.front;
                 cardElement.style.backgroundColor = "white";
                 isFront = true;
+            }
+        }
+
+        // ボタンを押したときにスマホのカメラを起動する
+        function triggerCamera() {
+            document.getElementById('cameraInput').click();
+        }
+
+        // 写真が撮られたら画面に小さく表示する
+        function previewImage(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    // ここで仮のAI起動メッセージ
+                    alert("写真を受け取りました！ここに将来、自動で単語帳を作ったり採点したりするAIのプログラムを合体させます！");
+                };
+                reader.readAsDataURL(input.files[0]);
             }
         }
     </script>
