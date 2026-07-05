@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI自動単語帳（カメラ版）</title>
+    <title>ガチ文字スキャン単語帳</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -24,22 +25,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             user-select: none;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background-color 0.3s;
             padding: 20px;
             text-align: center;
             margin-bottom: 20px;
+            word-break: break-all;
+            overflow-y: auto;
         }
         .card:active {
             transform: scale(0.98);
         }
-        /* カメラボタンの見た目 */
         .camera-btn {
-            background-color: #007bff;
-            color: white;
+            background-color: #ffc107;
+            color: #212529;
             border: none;
             padding: 12px 24px;
             font-size: 16px;
@@ -47,71 +49,96 @@
             border-radius: 25px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
         }
         .camera-btn:active {
             transform: scale(0.95);
         }
-        /* 隠し要素（スマホのカメラを呼び出すための仕掛け） */
         #cameraInput {
             display: none;
         }
-        .preview {
-            margin-top: 15px;
-            max-width: 150px;
-            max-height: 150px;
-            border-radius: 10px;
-            display: none;
+        .status-msg {
+            color: #333;
+            font-size: 14px;
+            height: auto;
+            margin-top: 5px;
+            text-align: center;
+            padding: 0 20px;
         }
     </style>
 </head>
 <body>
 
     <div class="card" id="wordCard" onclick="toggleCard()">
-        Apple
+        本やプリントの文字を撮影してね！
     </div>
     
-    <button class="camera-btn" onclick="triggerCamera()">📸 プリントを撮影する</button>
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="previewImage(event)">
+    <button class="camera-btn" onclick="triggerCamera()">📸 本気で文字スキャン</button>
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" onchange="scanImage(event)">
 
-    <img id="imagePreview" class="preview" alt="撮影した写真">
+    <div class="status-msg" id="statusMsg">ボタンを押してカメラを起動しよう</div>
 
     <script>
-        const wordData = { front: "Apple", back: "りんご" };
+        let currentWord = { front: "スキャンしてね", back: "裏面だよ" };
         let isFront = true;
         const cardElement = document.getElementById('wordCard');
+        const statusElement = document.getElementById('statusMsg');
 
         function toggleCard() {
             if (isFront) {
-                cardElement.innerText = wordData.back;
-                cardElement.style.backgroundColor = "#e3f2fd";
+                cardElement.innerText = currentWord.back;
+                cardElement.style.backgroundColor = "#fff9c4"; // 裏面は薄い黄色
                 isFront = false;
             } else {
-                cardElement.innerText = wordData.front;
+                cardElement.innerText = currentWord.front;
                 cardElement.style.backgroundColor = "white";
                 isFront = true;
             }
         }
 
-        // ボタンを押したときにスマホのカメラを起動する
         function triggerCamera() {
             document.getElementById('cameraInput').click();
         }
 
-        // 写真が撮られたら画面に小さく表示する
-        function previewImage(event) {
+        // 本当に画像から文字を読み取る処理
+        function scanImage(event) {
             const input = event.target;
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    
-                    // ここで仮のAI起動メッセージ
-                    alert("写真を受け取りました！ここに将来、自動で単語帳を作ったり採点したりするAIのプログラムを合体させます！");
+            if (!input.files || !input.files[0]) return;
+
+            statusElement.innerText = "文字を読み取り中...（10秒くらいかかるよ）";
+            cardElement.innerText = "⏳ 読み取り中...";
+            cardElement.style.backgroundColor = "#e3f2fd";
+
+            // Tesseract.jsを起動（日本語 'jpn' と 英語 'eng' を両方指定）
+            Tesseract.recognize(
+                input.files[0],
+                'jpn+eng',
+                { logger: m => {
+                    if(m.status === 'recognizing text') {
+                        statusElement.innerText = `文字を解析中: ${Math.round(m.progress * 100)}%`;
+                    }
+                }}
+            ).then(({ data: { text } }) => {
+                // 文字が何も読めなかった場合の処理
+                if (!text || text.trim() === "") {
+                    text = "文字が見つかりませんでした。もっと近くではっきり撮ってみてね！";
+                }
+
+                // 読み取った文字をカードにセット
+                currentWord = {
+                    front: "📄 読み取った文字",
+                    back: text
                 };
-                reader.readAsDataURL(input.files[0]);
-            }
+
+                isFront = true;
+                cardElement.innerText = currentWord.front;
+                cardElement.style.backgroundColor = "white";
+                statusElement.innerText = "スキャン完了！カードをタップして裏面（結果）を見てね！";
+            }).catch(err => {
+                console.error(err);
+                statusElement.innerText = "エラーが発生しました。もう一度試してね。";
+                cardElement.innerText = "❌ 失敗";
+            });
         }
     </script>
 
