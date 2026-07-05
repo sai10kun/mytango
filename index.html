@@ -16,10 +16,10 @@
             --card-back-text: #333;
             --file-box-bg: #e3f2fd;
             --overlay-bg: rgba(0, 0, 0, 0.4);
-            /* バナー用の色 */
-            --banner-bg: #007bff;
-            --banner-text: white;
-            --banner-sub: #e3f2fd;
+            /* バナー用の色（白ベース） */
+            --banner-bg: white;
+            --banner-text: #333;
+            --banner-sub: #666;
         }
 
         /* --- ダークモード用のカラー変数 --- */
@@ -57,7 +57,7 @@
             position: relative;
         }
         
-        /* 🆕 タイトルと説明をまとめたバナーデザイン */
+        /* タイトルと説明をまとめたバナーデザイン */
         .app-banner {
             background-color: var(--banner-bg);
             color: var(--banner-text);
@@ -70,9 +70,9 @@
             border: 1px solid var(--border-color);
         }
         .app-banner h1 {
-            font-size: 26px;
+            font-size: 24px;
             margin: 0 0 5px 0;
-            padding: 0;
+            padding: 0 35px;
             font-weight: bold;
         }
         .app-banner .app-desc {
@@ -82,6 +82,24 @@
             padding: 0;
             text-align: center;
         }
+
+        /* バナー左上の三線メニューボタン */
+        .hamburger-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: var(--banner-text);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            width: auto;
+            height: auto;
+            font-weight: normal;
+        }
+        .hamburger-btn:active { transform: scale(0.9); }
 
         h2 {
             font-size: 15px;
@@ -96,30 +114,11 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* ダークモード切り替えボタン（バナーやヘッダーの右上に配置） */
-        .theme-toggle-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(25px, 25px, 25px, 0.1);
-            background-color: var(--box-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 6px 10px;
-            font-size: 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            width: auto;
-            margin: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
-
         /* 小さなホームボタン(左上) */
         .home-icon-btn {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 15px;
+            left: 15px;
             background: var(--box-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
@@ -186,7 +185,7 @@
             user-select: none;
         }
 
-        /* 三点メニューポップアップ */
+        /* ポップアップメニュー共通デザイン */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -286,30 +285,23 @@
 
         <div id="homeScreen" class="screen active">
             <div class="app-banner">
-                <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+                <button class="hamburger-btn" onclick="openBannerMenu()">☰</button>
                 <h1>らくらく単語帳</h1>
                 <p class="app-desc">アカウントなしのweb単語帳アプリ</p>
             </div>
             
             <h2>アプリ内の単語帳（すぐ使える）</h2>
             <div class="section-box">
-                <button class="primary-btn" onclick="showScreen('inputScreen')">新しい単語帳を作る</button>
+                <button class="primary-btn" onclick="openCreateNew()">新しい単語帳を作る</button>
                 <div id="bookList" style="margin-top: 10px;"></div>
                 <button class="success-btn" onclick="saveAllBooks()" style="margin-top: 10px; margin-bottom: 0;">まとめて保存</button>
-            </div>
-
-            <h2>端末から追加（バックアップ・共有）</h2>
-            <div class="section-box" style="background: var(--file-box-bg);">
-                <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">保存した単語帳ファイル（.json）を読み込んでアプリに追加します。</p>
-                <button class="info-btn" onclick="triggerFileInput()">ファイルを選択して追加</button>
-                <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
             </div>
         </div>
 
         <div id="inputScreen" class="screen">
             <div class="app-banner">
-                <h1>カードの追加</h1>
-                <p class="app-desc">新しく単語を登録します</p>
+                <h1 id="inputScreenTitle">カードの追加</h1>
+                <p class="app-desc" id="inputScreenSub">新しく単語を登録します</p>
             </div>
             <div class="section-box">
                 <div class="input-group">
@@ -348,9 +340,20 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="bannerMenuModal" onclick="closeBannerMenu()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title">メニュー</div>
+            <button class="info-btn" onclick="triggerFileInput()">端末から追加 (.json)</button>
+            <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
+            <button class="primary-btn" onclick="toggleTheme()" id="themeMenuBtn" style="margin-top: 10px;">ダークモードのオン/オフ 🌙</button>
+            <button class="secondary-btn" onclick="closeBannerMenu()" style="margin-top: 20px; margin-bottom: 0;">閉じる</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="menuModal" onclick="closeMenuPopup()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-title" id="modalTargetTitle">単語帳の名前</div>
+            <button class="success-btn" onclick="menuAction('append')">カードを追加する</button>
             <button class="primary-btn" onclick="menuAction('rename')">タイトルを変更する</button>
             <button class="info-btn" onclick="menuAction('save')">この単語帳のみ保存</button>
             <button class="danger-btn" onclick="menuAction('delete')">削除する</button>
@@ -362,6 +365,7 @@
         let allBooks = JSON.parse(localStorage.getItem('myTangoData')) || {};
         let tempCards = [];
         let selectedBookName = ""; 
+        let isAppendMode = false; 
 
         let currentPlayCards = []; 
         let currentCardIndex = 0;   
@@ -370,21 +374,30 @@
         // --- 🌗 ダークモードの管理 ---
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeButton(savedTheme);
+        updateThemeMenuButton(savedTheme);
 
         function toggleTheme() {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('tangoTheme', newTheme);
-            updateThemeButton(newTheme);
+            updateThemeMenuButton(newTheme);
         }
 
-        function updateThemeButton(theme) {
-            const btn = document.getElementById('themeBtn');
-            btn.innerText = theme === 'dark' ? '☀️' : '🌙';
+        function updateThemeMenuButton(theme) {
+            const btn = document.getElementById('themeMenuBtn');
+            if (btn) {
+                btn.innerText = theme === 'dark' ? 'ライトモードにする ☀️' : 'ダークモードにする 🌙';
+            }
         }
         // -----------------------------
+
+        function openBannerMenu() {
+            document.getElementById('bannerMenuModal').classList.add('active');
+        }
+        function closeBannerMenu() {
+            document.getElementById('bannerMenuModal').classList.remove('active');
+        }
 
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -423,6 +436,27 @@
             });
         }
 
+        function openCreateNew() {
+            isAppendMode = false;
+            selectedBookName = "";
+            document.getElementById('inputScreenTitle').innerText = "新しい単語帳を作る";
+            document.getElementById('inputScreenSub').innerText = "新しく単語帳を登録します";
+            document.getElementById('tempCount').innerText = 'まだカードはありません';
+            tempCards = [];
+            showScreen('inputScreen');
+        }
+
+        // 🆕 三点マークから直接追加画面を呼び出す関数
+        function startAppendToBook(bookName) {
+            isAppendMode = true;
+            selectedBookName = bookName;
+            document.getElementById('inputScreenTitle').innerText = `${selectedBookName} に追加`;
+            document.getElementById('inputScreenSub').innerText = "現在ある単語帳にカードを追加します";
+            document.getElementById('tempCount').innerText = `現在 ${allBooks[selectedBookName].length} 枚保存されている単語帳です`;
+            tempCards = [];
+            showScreen('inputScreen');
+        }
+
         function openMenuPopup(bookName) {
             selectedBookName = bookName;
             document.getElementById('modalTargetTitle').innerText = bookName;
@@ -438,12 +472,14 @@
             const bookName = selectedBookName;
             closeMenuPopup();
 
-            if (type === 'rename') {
+            if (type === 'append') {
+                // 🆕 三点マーク内から「追加」が選ばれたとき
+                startAppendToBook(bookName);
+            } else if (type === 'rename') {
                 const newName = prompt("新しい単語帳の名前を入力してください：", bookName);
                 if (newName && newName.trim() !== "" && newName !== bookName) {
                     if (allBooks[newName]) {
-                        alert("すでに同じ名前の単語帳があります。");
-                        return;
+                        alert("すでに同じ名前の単語帳があります。"); return;
                     }
                     allBooks[newName] = allBooks[bookName];
                     delete allBooks[bookName];
@@ -470,7 +506,9 @@
             }
             tempCards.push({ front: front.value, back: back.value });
             front.value = ''; back.value = ''; front.focus();
-            document.getElementById('tempCount').innerText = `現在 ${tempCards.length} 枚のカードが追加されています`;
+            
+            const baseCount = isAppendMode ? allBooks[selectedBookName].length : 0;
+            document.getElementById('tempCount').innerText = `今回新しく ${tempCards.length} 枚追加中 (合計: ${baseCount + tempCards.length} 枚)`;
         }
 
         function finishBook() {
@@ -479,33 +517,36 @@
             if (front.value.trim() !== '' && back.value.trim() !== '') {
                 tempCards.push({ front: front.value, back: back.value });
             }
+            
             if (tempCards.length === 0) { alert('最低1枚はカードを追加してね！'); return; }
 
-            const bookName = prompt('この単語帳の名前を入力してください：');
-            if (!bookName || bookName.trim() === '') {
-                alert('名前が入力されなかったため、保存を中止しました。'); return;
-            }
-
-            if (allBooks[bookName]) {
-                if (!confirm(`「${bookName}」はすでに存在します。追加（合体）しますか？`)) return;
-                allBooks[bookName] = allBooks[bookName].concat(tempCards);
+            if (isAppendMode) {
+                allBooks[selectedBookName] = allBooks[selectedBookName].concat(tempCards);
+                alert(`「${selectedBookName}」にカードを追加しました！`);
             } else {
-                allBooks[bookName] = tempCards;
+                const bookName = prompt('この単語帳の名前を入力してください：');
+                if (!bookName || bookName.trim() === '') {
+                    alert('名前が入力されなかったため、保存を中止しました。'); return;
+                }
+                if (allBooks[bookName]) {
+                    if (!confirm(`「${bookName}」はすでに存在します。追加（合体）しますか？`)) return;
+                    allBooks[bookName] = allBooks[bookName].concat(tempCards);
+                } else {
+                    allBooks[bookName] = tempCards;
+                }
+                alert(`単語帳「${bookName}」をアプリ内に保存しました！`);
             }
 
             saveData();
             tempCards = []; front.value = ''; back.value = '';
-            document.getElementById('tempCount').innerText = 'まだカードはありません';
-            alert(`単語帳「${bookName}」をアプリ内に保存しました！`);
             showScreen('homeScreen');
         }
 
         function cancelCreation() {
-            if (confirm('作りかけの単語帳を破棄してホームに戻りますか？')) {
+            if (confirm('作りかけの入力を破棄してホームに戻りますか？')) {
                 tempCards = [];
                 document.getElementById('frontInput').value = '';
                 document.getElementById('backInput').value = '';
-                document.getElementById('tempCount').innerText = 'まだカードはありません';
                 showScreen('homeScreen');
             }
         }
@@ -616,6 +657,7 @@
         }
 
         function triggerFileInput() {
+            closeBannerMenu();
             document.getElementById('fileInput').click();
         }
 
