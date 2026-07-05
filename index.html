@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>らくらく単語帳</title>
     <style>
-        /* --- 基本のカラー変数（ライトモード） --- */
         :root {
             --bg-color: #f0f2f5;
             --box-bg: white;
@@ -16,13 +15,11 @@
             --card-back-text: #333;
             --file-box-bg: #e3f2fd;
             --overlay-bg: rgba(0, 0, 0, 0.4);
-            /* バナー用の色（白ベース） */
             --banner-bg: white;
             --banner-text: #333;
             --banner-sub: #666;
         }
 
-        /* --- ダークモード用のカラー変数 --- */
         [data-theme="dark"] {
             --bg-color: #18191a;
             --box-bg: #242526;
@@ -33,7 +30,6 @@
             --card-back-text: #fff9c4;
             --file-box-bg: #1e293b;
             --overlay-bg: rgba(0, 0, 0, 0.6);
-            /* バナー用の色 */
             --banner-bg: #242526;
             --banner-text: #e4e6eb;
             --banner-sub: #b0b3b8;
@@ -57,7 +53,6 @@
             position: relative;
         }
         
-        /* タイトルと説明をまとめたバナーデザイン */
         .app-banner {
             background-color: var(--banner-bg);
             color: var(--banner-text);
@@ -83,7 +78,6 @@
             text-align: center;
         }
 
-        /* バナー左上の三線メニューボタン */
         .hamburger-btn {
             position: absolute;
             top: 15px;
@@ -110,11 +104,9 @@
             border-left: 4px solid #007bff;
         }
 
-        /* 画面切り替え */
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* 小さなホームボタン(左上) */
         .home-icon-btn {
             position: absolute;
             top: 15px;
@@ -132,7 +124,6 @@
             z-index: 10;
         }
 
-        /* ボタン共通 */
         button {
             width: 100%;
             padding: 14px;
@@ -152,7 +143,6 @@
         .info-btn { background-color: #17a2b8; color: white; }
         .danger-btn { background-color: #dc3545; color: white; }
 
-        /* 白ボックス */
         .section-box {
             background: var(--box-bg);
             padding: 15px;
@@ -162,7 +152,6 @@
             border: 1px solid var(--border-color);
         }
 
-        /* 一覧のアイテム */
         .tango-book-item {
             background: var(--bg-color);
             padding: 12px;
@@ -176,7 +165,6 @@
             font-size: 16px;
         }
         
-        /* 三点リーダーボタン */
         .menu-btn {
             color: var(--text-color);
             font-size: 20px;
@@ -185,7 +173,6 @@
             user-select: none;
         }
 
-        /* ポップアップメニュー共通デザイン */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -199,6 +186,46 @@
             z-index: 100;
         }
         .modal-overlay.active { display: flex; }
+        
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-bg);
+            z-index: 200;
+        }
+        .drawer-overlay.active { display: block; }
+
+        .drawer-content {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--box-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            z-index: 201;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .drawer-overlay.active .drawer-content {
+            left: 0;
+        }
+        .drawer-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
         .modal-content {
             background: var(--box-bg);
             border: 1px solid var(--border-color);
@@ -216,7 +243,6 @@
             word-break: break-all;
         }
 
-        /* 入力欄 */
         .input-group { margin-bottom: 15px; }
         .input-group label {
             display: block;
@@ -236,7 +262,6 @@
             box-sizing: border-box;
         }
 
-        /* 1枚表示用の単語カードデザイン */
         .single-card-container {
             margin-top: 20px;
             display: flex;
@@ -290,7 +315,6 @@
                 <p class="app-desc">アカウントなしのweb単語帳アプリ</p>
             </div>
             
-            <h2>アプリ内の単語帳（すぐ使える）</h2>
             <div class="section-box">
                 <button class="primary-btn" onclick="openCreateNew()">新しい単語帳を作る</button>
                 <div id="bookList" style="margin-top: 10px;"></div>
@@ -340,13 +364,13 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="bannerMenuModal" onclick="closeBannerMenu()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-title">メニュー</div>
+    <div class="drawer-overlay" id="bannerMenuModal" onclick="closeBannerMenu()">
+        <div class="drawer-content" onclick="event.stopPropagation()">
+            <div class="drawer-title">メニュー</div>
             <button class="info-btn" onclick="triggerFileInput()">端末から追加 (.json)</button>
             <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
             <button class="primary-btn" onclick="toggleTheme()" id="themeMenuBtn" style="margin-top: 10px;">ダークモードのオン/オフ 🌙</button>
-            <button class="secondary-btn" onclick="closeBannerMenu()" style="margin-top: 20px; margin-bottom: 0;">閉じる</button>
+            <button class="secondary-btn" onclick="closeBannerMenu()" style="margin-top: auto; margin-bottom: 0;">閉じる</button>
         </div>
     </div>
 
@@ -371,7 +395,6 @@
         let currentCardIndex = 0;   
         let isCardFlipped = false;  
 
-        // --- 🌗 ダークモードの管理 ---
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeMenuButton(savedTheme);
@@ -390,7 +413,6 @@
                 btn.innerText = theme === 'dark' ? 'ライトモードにする ☀️' : 'ダークモードにする 🌙';
             }
         }
-        // -----------------------------
 
         function openBannerMenu() {
             document.getElementById('bannerMenuModal').classList.add('active');
@@ -446,7 +468,6 @@
             showScreen('inputScreen');
         }
 
-        // 🆕 三点マークから直接追加画面を呼び出す関数
         function startAppendToBook(bookName) {
             isAppendMode = true;
             selectedBookName = bookName;
@@ -473,7 +494,6 @@
             closeMenuPopup();
 
             if (type === 'append') {
-                // 🆕 三点マーク内から「追加」が選ばれたとき
                 startAppendToBook(bookName);
             } else if (type === 'rename') {
                 const newName = prompt("新しい単語帳の名前を入力してください：", bookName);
