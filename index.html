@@ -15,7 +15,7 @@
             --card-back-bg: #fff9c4;
             --card-back-text: #333;
             --file-box-bg: #e3f2fd;
-            --save-box-bg: #e8f5e9;
+            --overlay-bg: rgba(0, 0, 0, 0.4);
         }
 
         /* --- ダークモード用のカラー変数 --- */
@@ -28,7 +28,7 @@
             --card-back-bg: #3a3b3c;
             --card-back-text: #fff9c4;
             --file-box-bg: #1e293b;
-            --save-box-bg: #14532d;
+            --overlay-bg: rgba(0, 0, 0, 0.6);
         }
 
         body {
@@ -131,6 +131,7 @@
         .success-btn { background-color: #28a745; color: white; }
         .secondary-btn { background-color: #6c757d; color: white; }
         .info-btn { background-color: #17a2b8; color: white; }
+        .danger-btn { background-color: #dc3545; color: white; }
 
         /* 白ボックス */
         .section-box {
@@ -165,6 +166,37 @@
             user-select: none;
         }
 
+        /* 三点メニューポップアップ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-bg);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--box-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .modal-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+
         /* 入力欄 */
         .input-group { margin-bottom: 15px; }
         .input-group label {
@@ -185,35 +217,44 @@
             box-sizing: border-box;
         }
 
-        /* 単語カード */
-        .card-list {
+        /* 🆕 1枚表示用の単語カードデザイン */
+        .single-card-container {
+            margin-top: 20px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
+            align-items: center;
+            width: 100%;
         }
         .card {
             background-color: var(--box-bg);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             color: var(--text-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            min-height: 100px;
+            border-radius: 14px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
             text-align: center;
-            padding: 15px;
+            padding: 20px;
             cursor: pointer;
             user-select: none;
             word-break: break-all;
+            box-sizing: border-box;
             transition: background-color 0.2s;
         }
         .card.back {
             background-color: var(--card-back-bg);
             color: var(--card-back-text);
+        }
+        .card-progress {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+            font-weight: bold;
         }
 
         #fileInput { display: none; }
@@ -237,7 +278,7 @@
 
             <h2>端末から追加（バックアップ・共有）</h2>
             <div class="section-box" style="background: var(--file-box-bg);">
-                <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">保存した単語帳ファイル（.json）を読み込んでアプリに追加します。（まとめて保存したファイルもここから戻せます）</p>
+                <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">保存した単語帳ファイル（.json）を読み込んでアプリに追加します。</p>
                 <button class="info-btn" onclick="triggerFileInput()">ファイルを選択して追加</button>
                 <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
             </div>
@@ -266,20 +307,41 @@
             <button class="home-icon-btn" onclick="showScreen('homeScreen')">🏠</button>
             
             <h1 id="viewBookTitle" style="margin-top: 40px;">単語帳の名前</h1>
-            <p class="app-desc">タップすると裏返ります</p>
+            <p class="app-desc" id="viewBookDesc">モードを選択してください</p>
             
-            <div class="section-box" style="background: var(--save-box-bg); margin-top: 15px;">
-                <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">この単語帳をファイルとしてスマホに保存（ダウンロード）します。</p>
-                <button class="success-btn" id="downloadBtn" style="margin-bottom: 0;">スマホにファイルとして保存</button>
+            <div id="modeSelectArea">
+                <button class="primary-btn" onclick="startBook('normal')">作成順でスタート</button>
+                <button class="info-btn" onclick="startBook('shuffle')">シャフルでスタート</button>
             </div>
-            
-            <div class="card-list" id="viewCardList"></div>
+
+            <div id="cardPlayArea" style="display: none;" class="single-card-container">
+                <div class="card-progress" id="cardProgress">0 / 0</div>
+                <div class="card" id="mainCard" onclick="handleCardClick()">オモテ</div>
+                
+                <button class="secondary-btn" id="prevBtn" onclick="prevCard()" style="margin-top: 25px;">戻る</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="menuModal" onclick="closeMenuPopup()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-title" id="modalTargetTitle">単語帳の名前</div>
+            <button class="primary-btn" onclick="menuAction('rename')">タイトルを変更する</button>
+            <button class="info-btn" onclick="menuAction('save')">この単語帳のみ保存</button>
+            <button class="danger-btn" onclick="menuAction('delete')">削除する</button>
+            <button class="secondary-btn" onclick="closeMenuPopup()" style="margin-top: 10px; margin-bottom: 0;">キャンセル</button>
         </div>
     </div>
 
     <script>
         let allBooks = JSON.parse(localStorage.getItem('myTangoData')) || {};
         let tempCards = [];
+        let selectedBookName = ""; 
+
+        // 🆕 ゲーム進行用の変数
+        let currentPlayCards = []; // 再生中のカードリスト
+        let currentCardIndex = 0;   // いま何枚目か
+        let isCardFlipped = false;  // いま裏返っている（ウラ面）か
 
         // --- 🌗 ダークモードの管理 ---
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
@@ -306,7 +368,6 @@
             if (screenId === 'homeScreen') { renderBookList(); }
         }
 
-        // ホームの一覧表示（三点リーダーメニュー化）
         function renderBookList() {
             const bookListDiv = document.getElementById('bookList');
             bookListDiv.innerHTML = '';
@@ -324,12 +385,11 @@
                 nameSpan.style.cursor = 'pointer';
                 nameSpan.onclick = () => openBook(bookName);
                 
-                // 三点リーダーボタン
                 const menuBtn = document.createElement('span');
                 menuBtn.className = 'menu-btn';
                 menuBtn.innerText = '…';
                 menuBtn.onclick = (e) => {
-                    e.stopPropagation(); // 単語帳が開いちゃうのを防ぐ
+                    e.stopPropagation();
                     openMenuPopup(bookName);
                 };
 
@@ -339,12 +399,22 @@
             });
         }
 
-        // 三点リーダーを押したときの処理
         function openMenuPopup(bookName) {
-            const action = prompt(`「${bookName}」の操作を選んで数字を入力してください：\n\n1: タイトルを変更する\n2: 削除する\n3: この単語帳単体で保存する`, "1");
-            
-            if (action === "1") {
-                // タイトル変更
+            selectedBookName = bookName;
+            document.getElementById('modalTargetTitle').innerText = bookName;
+            document.getElementById('menuModal').classList.add('active');
+        }
+
+        function closeMenuPopup() {
+            document.getElementById('menuModal').classList.remove('active');
+            selectedBookName = "";
+        }
+
+        function menuAction(type) {
+            const bookName = selectedBookName;
+            closeMenuPopup();
+
+            if (type === 'rename') {
                 const newName = prompt("新しい単語帳の名前を入力してください：", bookName);
                 if (newName && newName.trim() !== "" && newName !== bookName) {
                     if (allBooks[newName]) {
@@ -357,15 +427,13 @@
                     renderBookList();
                     alert("タイトルを変更しました！");
                 }
-            } else if (action === "2") {
-                // 削除
+            } else if (type === 'delete') {
                 if (confirm(`「${bookName}」をアプリ内から削除しますか？`)) {
                     delete allBooks[bookName];
                     saveData();
                     renderBookList();
                 }
-            } else if (action === "3") {
-                // 単体保存
+            } else if (type === 'save') {
                 saveToFile(bookName);
             }
         }
@@ -418,49 +486,113 @@
             }
         }
 
+        // 単語帳画面の初期化（まずはモード選択を見せる）
         function openBook(bookName) {
+            selectedBookName = bookName;
             document.getElementById('viewBookTitle').innerText = bookName;
-            const cardListDiv = document.getElementById('viewCardList');
-            cardListDiv.innerHTML = '';
-
-            document.getElementById('downloadBtn').onclick = () => saveToFile(bookName);
-
-            const cards = allBooks[bookName];
-            cards.forEach(word => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerText = word.front;
-                let isFront = true;
-                card.onclick = () => {
-                    if (isFront) {
-                        card.innerText = word.back; card.classList.add('back'); isFront = false;
-                    } else {
-                        card.innerText = word.front; card.classList.remove('back'); isFront = true;
-                    }
-                };
-                cardListDiv.appendChild(card);
-            });
+            document.getElementById('viewBookDesc').innerText = "モードを選択してください";
+            
+            // 表示エリアのリセット
+            document.getElementById('modeSelectArea').style.display = 'block';
+            document.getElementById('cardPlayArea').style.display = 'none';
+            
             showScreen('viewScreen');
         }
 
-        // 📤 単体保存：ファイル名は [単語帳の名前].json
+        // 🆕 モードを選んでスタートする関数
+        function startBook(mode) {
+            const originalCards = allBooks[selectedBookName];
+            if (!originalCards || originalCards.length === 0) {
+                alert("カードが入っていません。"); return;
+            }
+
+            // カードデータのコピーを作成
+            currentPlayCards = JSON.parse(JSON.stringify(originalCards));
+
+            // シャッフルモードなら配列をランダムに入れ替え
+            if (mode === 'shuffle') {
+                for (let i = currentPlayCards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [currentPlayCards[i], currentPlayCards[j]] = [currentPlayCards[j], currentPlayCards[i]];
+                }
+                document.getElementById('viewBookDesc').innerText = "シャフルモード中";
+            } else {
+                document.getElementById('viewBookDesc').innerText = "作成順モード中";
+            }
+
+            currentCardIndex = 0;
+            isCardFlipped = false;
+
+            // 表示の切り替え
+            document.getElementById('modeSelectArea').style.display = 'none';
+            document.getElementById('cardPlayArea').style.display = 'flex';
+
+            updateCardDisplay();
+        }
+
+        // 🆕 カードの表示内容を更新する
+        function updateCardDisplay() {
+            const cardElement = document.getElementById('mainCard');
+            const currentCard = currentPlayCards[currentCardIndex];
+
+            document.getElementById('cardProgress').innerText = `${currentCardIndex + 1} / ${currentPlayCards.length}`;
+
+            if (!isCardFlipped) {
+                // オモテ面表示
+                cardElement.innerText = currentCard.front;
+                cardElement.classList.remove('back');
+            } else {
+                // ウラ面表示
+                cardElement.innerText = currentCard.back;
+                cardElement.classList.add('back');
+            }
+
+            // 最初のカードの時は「戻る」ボタンを押せなくする
+            document.getElementById('prevBtn').style.visibility = (currentCardIndex === 0) ? 'hidden' : 'visible';
+        }
+
+        // 🆕 カードがタップされた時の処理（めくる ➔ 次に進む）
+        function handleCardClick() {
+            if (!isCardFlipped) {
+                // オモテ ➔ ウラにめくる
+                isCardFlipped = true;
+                updateCardDisplay();
+            } else {
+                // ウラ ➔ 次のカードに進む
+                if (currentCardIndex < currentPlayCards.length - 1) {
+                    currentCardIndex++;
+                    isCardFlipped = false;
+                    updateCardDisplay();
+                } else {
+                    alert("最後のカードです！ホームに戻るか、もう一度開いてね。");
+                    showScreen('homeScreen');
+                }
+            }
+        }
+
+        // 🆕 戻るボタンが押されたとき（前のカードへ戻る）
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                isCardFlipped = false; // 前のカードのオモテ面から見せる
+                updateCardDisplay();
+            }
+        }
+
         function saveToFile(bookName) {
             const dataStr = JSON.stringify(allBooks[bookName], null, 2);
             downloadJson(dataStr, `${bookName}.json`);
         }
 
-        // 📤 まとめて保存：ファイル名は rkrktng.json
         function saveAllBooks() {
             const keys = Object.keys(allBooks);
             if (keys.length === 0) {
-                alert("保存する単語帳がありません。");
-                return;
+                alert("保存する単語帳がありません。"); return;
             }
             const dataStr = JSON.stringify(allBooks, null, 2);
             downloadJson(dataStr, "rkrktng.json");
         }
 
-        // 共通のダウンロード処理
         function downloadJson(dataStr, fileName) {
             const blob = new Blob([dataStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
@@ -477,7 +609,6 @@
             document.getElementById('fileInput').click();
         }
 
-        // 📥 ファイル読み込み（単体ファイル、まとめて保存ファイルの両方に対応）
         function loadFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -489,7 +620,6 @@
                     const imported = JSON.parse(e.target.result);
                     
                     if (Array.isArray(imported)) {
-                        // 【単体ファイルの場合】（中身が配列になっている）
                         if (allBooks[fileNameNoExt]) {
                             if (!confirm(`すでに「${fileNameNoExt}」という単語帳があります。上書きしますか？（キャンセルすると合体します）`)) {
                                 allBooks[fileNameNoExt] = allBooks[fileNameNoExt].concat(imported);
@@ -500,7 +630,6 @@
                             allBooks[fileNameNoExt] = imported;
                         }
                     } else if (typeof imported === 'object' && imported !== null) {
-                        // 【まとめて保存ファイルの場合】（中身が連想配列のオブジェクトになっている）
                         if (confirm("まとめて保存されたファイルを読み込みます。既存のデータに上書き追加しますか？")) {
                             allBooks = Object.assign({}, allBooks, imported);
                         } else {
