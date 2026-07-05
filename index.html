@@ -76,7 +76,7 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* ダークモード切り替えボタン */
+        /* ダークモード切り替えボタン（ここだけ絵文字を残しています） */
         .theme-toggle-btn {
             position: absolute;
             top: 5px;
@@ -112,7 +112,7 @@
         .secondary-btn { background-color: #6c757d; color: white; }
         .info-btn { background-color: #17a2b8; color: white; }
 
-        /* 白ボックス（枠線もモードで変化） */
+        /* 白ボックス */
         .section-box {
             background: var(--box-bg);
             padding: 15px;
@@ -207,16 +207,16 @@
             <h1>らくらく単語帳</h1>
             <p class="app-desc">アカウントなしのweb単語帳アプリ</p>
             
-            <h2>📱 アプリ内の単語帳（すぐ使える）</h2>
+            <h2>アプリ内の単語帳（すぐ使える）</h2>
             <div class="section-box">
-                <button class="primary-btn" onclick="showScreen('inputScreen')">＋ 新しい単語帳を作る</button>
+                <button class="primary-btn" onclick="showScreen('inputScreen')">新しい単語帳を作る</button>
                 <div id="bookList" style="margin-top: 10px;"></div>
             </div>
 
-            <h2>📂 端末から追加（バックアップ・共有）</h2>
+            <h2>端末から追加（バックアップ・共有）</h2>
             <div class="section-box" style="background: var(--file-box-bg);">
                 <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">スマホに保存した単語帳ファイル（.json）を読み込んでアプリに追加します。</p>
-                <button class="info-btn" onclick="triggerFileInput()">📥 ファイルを選択して追加</button>
+                <button class="info-btn" onclick="triggerFileInput()">ファイルを選択して追加</button>
                 <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
             </div>
         </div>
@@ -243,11 +243,11 @@
         <div id="viewScreen" class="screen">
             <h1 id="viewBookTitle">単語帳の名前</h1>
             <p class="app-desc">タップすると裏返ります</p>
-            <button class="secondary-btn" onclick="showScreen('homeScreen')">🏠 ホームに戻る</button>
+            <button class="secondary-btn" onclick="showScreen('homeScreen')">ホームに戻る</button>
             
             <div class="section-box" style="background: var(--save-box-bg); margin-top: 15px;">
                 <p style="font-size: 12px; color: var(--text-sub); margin-top: 0;">この単語帳をファイルとしてスマホに保存（ダウンロード）します。</p>
-                <button class="success-btn" id="downloadBtn" style="margin-bottom: 0;">📤 スマホにファイルとして保存</button>
+                <button class="success-btn" id="downloadBtn" style="margin-bottom: 0;">スマホにファイルとして保存</button>
             </div>
             
             <div class="card-list" id="viewCardList"></div>
@@ -259,7 +259,6 @@
         let tempCards = [];
 
         // --- 🌗 ダークモードの管理 ---
-        // 最初 or 前回保存したテーマを読み込む
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeButton(savedTheme);
@@ -269,7 +268,7 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             
             document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('tangoTheme', newTheme); // スマホに記憶
+            localStorage.setItem('tangoTheme', newTheme);
             updateThemeButton(newTheme);
         }
 
@@ -298,7 +297,7 @@
                 item.className = 'tango-book-item';
                 
                 const nameSpan = document.createElement('span');
-                nameSpan.innerText = `${bookName} (${allBooks[bookName].length}枚)`;
+                nameSpan.innerText = `${bookName} (${allBooks[bookName].length})`;
                 nameSpan.style.cursor = 'pointer';
                 nameSpan.onclick = () => openBook(bookName);
                 
