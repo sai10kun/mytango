@@ -16,6 +16,10 @@
             --card-back-text: #333;
             --file-box-bg: #e3f2fd;
             --overlay-bg: rgba(0, 0, 0, 0.4);
+            /* バナー用の色 */
+            --banner-bg: #007bff;
+            --banner-text: white;
+            --banner-sub: #e3f2fd;
         }
 
         /* --- ダークモード用のカラー変数 --- */
@@ -29,6 +33,10 @@
             --card-back-text: #fff9c4;
             --file-box-bg: #1e293b;
             --overlay-bg: rgba(0, 0, 0, 0.6);
+            /* バナー用の色 */
+            --banner-bg: #242526;
+            --banner-text: #e4e6eb;
+            --banner-sub: #b0b3b8;
         }
 
         body {
@@ -49,19 +57,30 @@
             position: relative;
         }
         
-        /* タイトルと説明 */
-        h1 {
-            font-size: 24px;
-            margin-bottom: 2px;
+        /* 🆕 タイトルと説明をまとめたバナーデザイン */
+        .app-banner {
+            background-color: var(--banner-bg);
+            color: var(--banner-text);
+            padding: 20px 15px;
+            border-radius: 12px;
             text-align: center;
-            padding: 0 40px;
-        }
-        .app-desc {
-            font-size: 13px;
-            color: var(--text-sub);
-            text-align: center;
-            margin-top: 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+        .app-banner h1 {
+            font-size: 26px;
+            margin: 0 0 5px 0;
+            padding: 0;
+            font-weight: bold;
+        }
+        .app-banner .app-desc {
+            font-size: 13px;
+            color: var(--banner-sub);
+            margin: 0;
+            padding: 0;
+            text-align: center;
         }
 
         h2 {
@@ -77,16 +96,17 @@
         .screen { display: none; }
         .screen.active { display: block; }
 
-        /* ダークモード切り替えボタン */
+        /* ダークモード切り替えボタン（バナーやヘッダーの右上に配置） */
         .theme-toggle-btn {
             position: absolute;
-            top: 5px;
-            right: 0;
-            background: var(--box-bg);
+            top: 10px;
+            right: 10px;
+            background: rgba(25px, 25px, 25px, 0.1);
+            background-color: var(--box-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 8px 12px;
-            font-size: 16px;
+            padding: 6px 10px;
+            font-size: 14px;
             border-radius: 20px;
             cursor: pointer;
             width: auto;
@@ -98,13 +118,13 @@
         /* 小さなホームボタン(左上) */
         .home-icon-btn {
             position: absolute;
-            top: 5px;
-            left: 0;
+            top: 10px;
+            left: 10px;
             background: var(--box-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
-            padding: 8px 12px;
-            font-size: 16px;
+            padding: 6px 10px;
+            font-size: 14px;
             border-radius: 20px;
             cursor: pointer;
             width: auto;
@@ -217,7 +237,7 @@
             box-sizing: border-box;
         }
 
-        /* 🆕 1枚表示用の単語カードデザイン */
+        /* 1枚表示用の単語カードデザイン */
         .single-card-container {
             margin-top: 20px;
             display: flex;
@@ -263,11 +283,13 @@
 <body>
 
     <div class="container">
-        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
 
         <div id="homeScreen" class="screen active">
-            <h1>らくらく単語帳</h1>
-            <p class="app-desc">アカウントなしのweb単語帳アプリ</p>
+            <div class="app-banner">
+                <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+                <h1>らくらく単語帳</h1>
+                <p class="app-desc">アカウントなしのweb単語帳アプリ</p>
+            </div>
             
             <h2>アプリ内の単語帳（すぐ使える）</h2>
             <div class="section-box">
@@ -285,8 +307,10 @@
         </div>
 
         <div id="inputScreen" class="screen">
-            <h1>カードの追加</h1>
-            <p class="app-desc">新しく単語を登録します</p>
+            <div class="app-banner">
+                <h1>カードの追加</h1>
+                <p class="app-desc">新しく単語を登録します</p>
+            </div>
             <div class="section-box">
                 <div class="input-group">
                     <label>オモテ面（問題など）</label>
@@ -304,10 +328,11 @@
         </div>
 
         <div id="viewScreen" class="screen">
-            <button class="home-icon-btn" onclick="showScreen('homeScreen')">🏠</button>
-            
-            <h1 id="viewBookTitle" style="margin-top: 40px;">単語帳の名前</h1>
-            <p class="app-desc" id="viewBookDesc">モードを選択してください</p>
+            <div class="app-banner">
+                <button class="home-icon-btn" onclick="showScreen('homeScreen')">🏠</button>
+                <h1 id="viewBookTitle">単語帳の名前</h1>
+                <p class="app-desc" id="viewBookDesc">モードを選択してください</p>
+            </div>
             
             <div id="modeSelectArea">
                 <button class="primary-btn" onclick="startBook('normal')">作成順でスタート</button>
@@ -338,10 +363,9 @@
         let tempCards = [];
         let selectedBookName = ""; 
 
-        // 🆕 ゲーム進行用の変数
-        let currentPlayCards = []; // 再生中のカードリスト
-        let currentCardIndex = 0;   // いま何枚目か
-        let isCardFlipped = false;  // いま裏返っている（ウラ面）か
+        let currentPlayCards = []; 
+        let currentCardIndex = 0;   
+        let isCardFlipped = false;  
 
         // --- 🌗 ダークモードの管理 ---
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
@@ -486,30 +510,25 @@
             }
         }
 
-        // 単語帳画面の初期化（まずはモード選択を見せる）
         function openBook(bookName) {
             selectedBookName = bookName;
             document.getElementById('viewBookTitle').innerText = bookName;
             document.getElementById('viewBookDesc').innerText = "モードを選択してください";
             
-            // 表示エリアのリセット
             document.getElementById('modeSelectArea').style.display = 'block';
             document.getElementById('cardPlayArea').style.display = 'none';
             
             showScreen('viewScreen');
         }
 
-        // 🆕 モードを選んでスタートする関数
         function startBook(mode) {
             const originalCards = allBooks[selectedBookName];
             if (!originalCards || originalCards.length === 0) {
                 alert("カードが入っていません。"); return;
             }
 
-            // カードデータのコピーを作成
             currentPlayCards = JSON.parse(JSON.stringify(originalCards));
 
-            // シャッフルモードなら配列をランダムに入れ替え
             if (mode === 'shuffle') {
                 for (let i = currentPlayCards.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
@@ -523,14 +542,12 @@
             currentCardIndex = 0;
             isCardFlipped = false;
 
-            // 表示の切り替え
             document.getElementById('modeSelectArea').style.display = 'none';
             document.getElementById('cardPlayArea').style.display = 'flex';
 
             updateCardDisplay();
         }
 
-        // 🆕 カードの表示内容を更新する
         function updateCardDisplay() {
             const cardElement = document.getElementById('mainCard');
             const currentCard = currentPlayCards[currentCardIndex];
@@ -538,27 +555,21 @@
             document.getElementById('cardProgress').innerText = `${currentCardIndex + 1} / ${currentPlayCards.length}`;
 
             if (!isCardFlipped) {
-                // オモテ面表示
                 cardElement.innerText = currentCard.front;
                 cardElement.classList.remove('back');
             } else {
-                // ウラ面表示
                 cardElement.innerText = currentCard.back;
                 cardElement.classList.add('back');
             }
 
-            // 最初のカードの時は「戻る」ボタンを押せなくする
             document.getElementById('prevBtn').style.visibility = (currentCardIndex === 0) ? 'hidden' : 'visible';
         }
 
-        // 🆕 カードがタップされた時の処理（めくる ➔ 次に進む）
         function handleCardClick() {
             if (!isCardFlipped) {
-                // オモテ ➔ ウラにめくる
                 isCardFlipped = true;
                 updateCardDisplay();
             } else {
-                // ウラ ➔ 次のカードに進む
                 if (currentCardIndex < currentPlayCards.length - 1) {
                     currentCardIndex++;
                     isCardFlipped = false;
@@ -570,11 +581,10 @@
             }
         }
 
-        // 🆕 戻るボタンが押されたとき（前のカードへ戻る）
         function prevCard() {
             if (currentCardIndex > 0) {
                 currentCardIndex--;
-                isCardFlipped = false; // 前のカードのオモテ面から見せる
+                isCardFlipped = false; 
                 updateCardDisplay();
             }
         }
