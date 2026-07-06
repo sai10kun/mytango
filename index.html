@@ -37,14 +37,10 @@
             --menu-hover: #3a3b3c;
         }
 
-        /* ✨ アニメーション定義 (超軽量キーフレーム) */
+        /* アニメーション定義 */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.92); }
-            to { opacity: 1; transform: scale(1); }
         }
         @keyframes cardFlip {
             0% { transform: scaleX(1); }
@@ -80,7 +76,7 @@
             margin-bottom: 20px;
             position: relative;
             border: 1px solid var(--border-color);
-            animation: fadeIn 0.4s ease-out; /* ✨ じわっと登場 */
+            animation: fadeIn 0.4s ease-out;
         }
         .app-banner h1 {
             font-size: 24px;
@@ -124,7 +120,6 @@
             border-left: 4px solid #007bff;
         }
 
-        /* ✨ 画面切り替え時に心地よくフェードイン */
         .screen { display: none; }
         .screen.active { 
             display: block; 
@@ -151,7 +146,6 @@
         .home-icon-btn:hover { transform: translateY(-2px); }
         .home-icon-btn:active { transform: translateY(0); }
 
-        /* ✨ すべてのボタンに「ぷにっ」とした手応えを追加 */
         button {
             width: 100%;
             padding: 14px;
@@ -191,7 +185,6 @@
             margin-bottom: 10px;
         }
 
-        /* ✨ リストアイテムが出るときも綺麗に */
         .tango-book-item {
             background: var(--bg-color);
             padding: 12px;
@@ -220,8 +213,8 @@
         }
         .menu-btn:hover { transform: scale(1.2); }
 
-        /* ✨ 背景オーバーレイのフェード */
-        .modal-overlay, .drawer-overlay {
+        /* ✨ オーバーレイの配置をきれいに中央揃えに修正 */
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -230,16 +223,31 @@
             height: 100%;
             background-color: var(--overlay-bg);
             z-index: 100;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.22s ease;
+        }
+        .modal-overlay.active { 
+            opacity: 1;
+        }
+        
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-bg);
+            z-index: 200;
             opacity: 0;
             transition: opacity 0.25s ease;
         }
-        .modal-overlay.active, .drawer-overlay.active { 
-            display: flex; 
+        .drawer-overlay.active { 
             opacity: 1;
         }
-        .drawer-overlay.active { display: block; }
 
-        /* ✨ ドロワーメニューのスライドイン */
         .drawer-content {
             position: fixed;
             top: 0;
@@ -287,7 +295,7 @@
             padding-top: 15px;
         }
 
-        /* ✨ ポップアップメニューのバウンス表示 */
+        /* ✨ ポップアップがバカでかくならないように修正 */
         .modal-content {
             background: var(--box-bg);
             border: 1px solid var(--border-color);
@@ -297,16 +305,17 @@
             max-width: 320px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
+            box-sizing: border-box;
             transform: scale(0.9);
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.2);
         }
         .modal-overlay.active .modal-content {
             transform: scale(1);
         }
         .modal-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             word-break: break-all;
         }
 
@@ -362,7 +371,6 @@
             width: 100%;
         }
         
-        /* ✨ カードに陰影と滑らかなホバーアニメを追加 */
         .card {
             background-color: var(--box-bg);
             border: 2px solid var(--border-color);
@@ -395,7 +403,6 @@
             background-color: var(--card-back-bg);
             color: var(--card-back-text);
         }
-        /* めくった瞬間に走る軽量アニメ */
         .card.flipping {
             animation: cardFlip 0.25s ease-in-out;
         }
@@ -666,7 +673,7 @@
             setTimeout(() => {
                 modal.style.display = 'none';
                 selectedBookName = "";
-            }, 250);
+            }, 230);
         }
 
         function menuAction(type) {
@@ -798,7 +805,6 @@
 
             document.getElementById('cardProgress').innerText = `${currentCardIndex + 1} / ${currentPlayCards.length}`;
 
-            // ✨ カードめくり時に一瞬アニメクラスを付与
             cardElement.classList.add('flipping');
             setTimeout(() => {
                 if (!isCardFlipped) {
