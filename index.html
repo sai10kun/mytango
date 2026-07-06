@@ -18,6 +18,7 @@
             --banner-bg: white;
             --banner-text: #333;
             --banner-sub: #666;
+            --menu-hover: #f5f5f5;
         }
 
         [data-theme="dark"] {
@@ -33,6 +34,7 @@
             --banner-bg: #242526;
             --banner-text: #e4e6eb;
             --banner-sub: #b0b3b8;
+            --menu-hover: #3a3b3c;
         }
 
         body {
@@ -210,7 +212,7 @@
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
             transition: left 0.3s ease;
             z-index: 201;
-            padding: 20px;
+            padding: 20px 0;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -221,9 +223,28 @@
         .drawer-title {
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 25px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
+            margin-bottom: 15px;
+            padding: 0 20px 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .drawer-item {
+            padding: 15px 20px;
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+        .drawer-item:hover {
+            background-color: var(--menu-hover);
+        }
+        .drawer-item-close {
+            margin-top: auto;
+            color: var(--text-sub);
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
         }
 
         .modal-content {
@@ -316,8 +337,7 @@
             </div>
             
             <div class="section-box">
-                <button class="primary-btn" onclick="openCreateNew()">新しい単語帳を作る</button>
-                <div id="bookList" style="margin-top: 10px;"></div>
+                <div id="bookList"></div>
                 <button class="success-btn" onclick="saveAllBooks()" style="margin-top: 10px; margin-bottom: 0;">まとめて保存</button>
             </div>
         </div>
@@ -367,10 +387,11 @@
     <div class="drawer-overlay" id="bannerMenuModal" onclick="closeBannerMenu()">
         <div class="drawer-content" onclick="event.stopPropagation()">
             <div class="drawer-title">メニュー</div>
-            <button class="info-btn" onclick="triggerFileInput()">端末から追加 (.json)</button>
+            <div class="drawer-item" onclick="menuActionFromDrawer('create')">新しい単語帳を作る</div>
+            <div class="drawer-item" onclick="triggerFileInput()">端末から追加 (.json)</div>
             <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
-            <button class="primary-btn" onclick="toggleTheme()" id="themeMenuBtn" style="margin-top: 10px;">ダークモードのオン/オフ 🌙</button>
-            <button class="secondary-btn" onclick="closeBannerMenu()" style="margin-top: auto; margin-bottom: 0;">閉じる</button>
+            <div class="drawer-item" onclick="toggleTheme()" id="themeMenuBtn">ダークモードにする 🌙</div>
+            <div class="drawer-item drawer-item-close" onclick="closeBannerMenu()">閉じる</div>
         </div>
     </div>
 
@@ -466,6 +487,13 @@
             document.getElementById('tempCount').innerText = 'まだカードはありません';
             tempCards = [];
             showScreen('inputScreen');
+        }
+
+        function menuActionFromDrawer(type) {
+            closeBannerMenu();
+            if (type === 'create') {
+                openCreateNew();
+            }
         }
 
         function startAppendToBook(bookName) {
