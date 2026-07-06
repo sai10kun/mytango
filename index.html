@@ -144,6 +144,7 @@
         .secondary-btn { background-color: #6c757d; color: white; }
         .info-btn { background-color: #17a2b8; color: white; }
         .danger-btn { background-color: #dc3545; color: white; }
+        .warning-btn { background-color: #ffc107; color: #212529; }
 
         .section-box {
             background: var(--box-bg);
@@ -301,7 +302,7 @@
             border-radius: 14px;
             box-shadow: 0 6px 12px rgba(0,0,0,0.1);
             width: 100%;
-            height: 200px;
+            height: 180px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -325,6 +326,33 @@
             margin-bottom: 10px;
             font-weight: bold;
         }
+
+        /* 訂正表スタイリング */
+        .result-score {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            color: #28a745;
+        }
+        .correct-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .correct-table th, .correct-table td {
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            text-align: left;
+            word-break: break-all;
+        }
+        .correct-table th {
+            background-color: var(--bg-color);
+            font-weight: bold;
+        }
+        .text-danger { color: #dc3545; font-weight: bold; }
+        .text-success { color: #28a745; font-weight: bold; }
 
         #fileInput { display: none; }
     </style>
@@ -369,21 +397,46 @@
 
         <div id="viewScreen" class="screen">
             <div class="app-banner">
-                <button class="home-icon-btn" onclick="showScreen('homeScreen')">🏠</button>
+                <button class="home-icon-btn" onclick="goToHome()">🏠</button>
                 <h1 id="viewBookTitle">単語帳の名前</h1>
                 <p class="app-desc" id="viewBookDesc">モードを選択してください</p>
             </div>
             
             <div id="modeSelectArea">
-                <button class="primary-btn" onclick="startBook('normal')">作成順でスタート</button>
-                <button class="info-btn" onclick="startBook('shuffle')">シャフルでスタート</button>
+                <h2 style="margin-top: 10px;">カードをめくって暗記</h2>
+                <button class="primary-btn" onclick="startBook('normal')">めくる（作成順）</button>
+                <button class="info-btn" onclick="startBook('shuffle')">めくる（シャッフル）</button>
+                
+                <h2>テストに挑戦（アクティブリコール）</h2>
+                <button class="success-btn" onclick="startTest('normal')">テスト（作成順）</button>
+                <button class="warning-btn" onclick="startTest('shuffle')">テスト（シャッフル）</button>
             </div>
 
             <div id="cardPlayArea" style="display: none;" class="single-card-container">
                 <div class="card-progress" id="cardProgress">0 / 0</div>
                 <div class="card" id="mainCard" onclick="handleCardClick()">オモテ</div>
-                
                 <button class="secondary-btn" id="prevBtn" onclick="prevCard()" style="margin-top: 25px;">戻る</button>
+            </div>
+
+            <div id="testPlayArea" style="display: none;" class="single-card-container">
+                <div class="card-progress" id="testProgress">0 / 0</div>
+                <div class="card" id="testCard" style="cursor: default;">オモテ</div>
+                
+                <div class="section-box" style="width: 100%; margin-top: 20px; padding: 12px; box-sizing: border-box;">
+                    <div class="input-group" style="margin-bottom: 10px;">
+                        <label>ウラ面の答えを入力：</label>
+                        <input type="text" id="testAnswerInput" placeholder="答えを入力" autocomplete="off" onkeydown="if(event.key==='Enter')submitTestAnswer()">
+                    </div>
+                    <button class="primary-btn" onclick="submitTestAnswer()" style="margin-bottom: 0;">回答する</button>
+                </div>
+            </div>
+
+            <div id="testResultArea" style="display: none; width: 100%;">
+                <div class="section-box">
+                    <div class="result-score" id="resultScoreText">0 / 0 正解！</div>
+                    <div id="wrongTableContainer"></div>
+                    <button class="primary-btn" onclick="goToHome()" style="margin-top: 15px; margin-bottom: 0;">ホームに戻る</button>
+                </div>
             </div>
         </div>
     </div>
@@ -416,9 +469,15 @@
         let selectedBookName = ""; 
         let isAppendMode = false; 
 
+        // めくるモード用
         let currentPlayCards = []; 
         let currentCardIndex = 0;   
         let isCardFlipped = false;  
+
+        // テストモード用
+        let testCards = [];
+        let testIndex = 0;
+        let userAnswers = []; // ユーザーの入力ログを保持
 
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -450,6 +509,10 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             if (screenId === 'homeScreen') { renderBookList(); }
+        }
+
+        function goToHome() {
+            showScreen('homeScreen');
         }
 
         function renderBookList() {
@@ -610,10 +673,13 @@
             
             document.getElementById('modeSelectArea').style.display = 'block';
             document.getElementById('cardPlayArea').style.display = 'none';
+            document.getElementById('testPlayArea').style.display = 'none';
+            document.getElementById('testResultArea').style.display = 'none';
             
             showScreen('viewScreen');
         }
 
+        /* めくる暗記モードの開始 */
         function startBook(mode) {
             const originalCards = allBooks[selectedBookName];
             if (!originalCards || originalCards.length === 0) {
@@ -627,9 +693,9 @@
                     const j = Math.floor(Math.random() * (i + 1));
                     [currentPlayCards[i], currentPlayCards[j]] = [currentPlayCards[j], currentPlayCards[i]];
                 }
-                document.getElementById('viewBookDesc').innerText = "シャフルモード中";
+                document.getElementById('viewBookDesc').innerText = "めくるモード（シャッフル）";
             } else {
-                document.getElementById('viewBookDesc').innerText = "作成順モード中";
+                document.getElementById('viewBookDesc').innerText = "めくるモード（作成順）";
             }
 
             currentCardIndex = 0;
@@ -668,7 +734,7 @@
                     isCardFlipped = false;
                     updateCardDisplay();
                 } else {
-                    alert("最後のカードです！ホームに戻るか、もう一度開いてね。");
+                    alert("最後のカードです！ホームに戻ります。");
                     showScreen('homeScreen');
                 }
             }
@@ -682,6 +748,100 @@
             }
         }
 
+        /* 📝 テストモードの実装 */
+        function startTest(mode) {
+            const originalCards = allBooks[selectedBookName];
+            if (!originalCards || originalCards.length === 0) {
+                alert("カードが入っていません。"); return;
+            }
+
+            testCards = JSON.parse(JSON.stringify(originalCards));
+            userAnswers = [];
+            testIndex = 0;
+
+            if (mode === 'shuffle') {
+                for (let i = testCards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [testCards[i], testCards[j]] = [testCards[j], testCards[i]];
+                }
+                document.getElementById('viewBookDesc').innerText = "テストモード（シャッフル）";
+            } else {
+                document.getElementById('viewBookDesc').innerText = "テストモード（作成順）";
+            }
+
+            document.getElementById('modeSelectArea').style.display = 'none';
+            document.getElementById('testPlayArea').style.display = 'flex';
+            document.getElementById('testAnswerInput').value = '';
+
+            updateTestDisplay();
+        }
+
+        function updateTestDisplay() {
+            document.getElementById('testProgress').innerText = `${testIndex + 1} / ${testCards.length}`;
+            document.getElementById('testCard').innerText = testCards[testIndex].front;
+            const inputField = document.getElementById('testAnswerInput');
+            inputField.value = '';
+            inputField.focus();
+        }
+
+        function submitTestAnswer() {
+            const inputField = document.getElementById('testAnswerInput');
+            const ans = inputField.value.trim();
+            
+            // ユーザーの入力を記録（空欄でもそのまま次へ進む）
+            userAnswers.push(ans);
+
+            if (testIndex < testCards.length - 1) {
+                testIndex++;
+                updateTestDisplay();
+            } else {
+                // すべて解き終わったら結果発表
+                endTestAndShowResult();
+            }
+        }
+
+        function endTestAndShowResult() {
+            document.getElementById('testPlayArea').style.display = 'none';
+            document.getElementById('testResultArea').style.display = 'block';
+            document.getElementById('viewBookDesc').innerText = "テスト結果発表";
+
+            let correctCount = 0;
+            const tableContainer = document.getElementById('wrongTableContainer');
+            tableContainer.innerHTML = '';
+
+            // 訂正表の生成
+            const table = document.createElement('table');
+            table.className = 'correct-table';
+            table.innerHTML = `
+                <tr>
+                    <th>問題(オモテ)</th>
+                    <th>あなたの回答</th>
+                    <th>正解(ウラ)</th>
+                    <th>判定</th>
+                </tr>
+            `;
+
+            testCards.forEach((card, i) => {
+                const uAns = userAnswers[i];
+                const isCorrect = (uAns.toLowerCase() === card.back.trim().toLowerCase()); // 大文字小文字の違いは許容
+                
+                if (isCorrect) correctCount++;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${card.front}</td>
+                    <td class="${isCorrect ? 'text-success' : 'text-danger'}">${uAns || '(空欄)'}</td>
+                    <td>${card.back}</td>
+                    <td class="${isCorrect ? 'text-success' : 'text-danger'}">${isCorrect ? '○' : '×'}</td>
+                `;
+                table.appendChild(row);
+            });
+
+            document.getElementById('resultScoreText').innerText = `${testCards.length}問中 ${correctCount}問正解！`;
+            tableContainer.appendChild(table);
+        }
+
+        /* ファイル管理・セーブ周り */
         function saveToFile(bookName) {
             const dataStr = JSON.stringify(allBooks[bookName], null, 2);
             downloadJson(dataStr, `${bookName}.json`);
