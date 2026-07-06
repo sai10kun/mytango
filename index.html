@@ -154,6 +154,10 @@
             border: 1px solid var(--border-color);
         }
 
+        .book-list-container {
+            margin-bottom: 10px;
+        }
+
         .tango-book-item {
             background: var(--bg-color);
             padding: 12px;
@@ -337,8 +341,8 @@
             </div>
             
             <div class="section-box">
-                <div id="bookList"></div>
-                <button class="success-btn" onclick="saveAllBooks()" style="margin-top: 10px; margin-bottom: 0;">まとめて保存</button>
+                <div id="bookList" class="book-list-container"></div>
+                <button class="success-btn" onclick="saveAllBooks()" style="margin-bottom: 0;">まとめて保存</button>
             </div>
         </div>
 
