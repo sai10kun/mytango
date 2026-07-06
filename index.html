@@ -288,6 +288,25 @@
             box-sizing: border-box;
         }
 
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-sub);
+            cursor: pointer;
+            user-select: none;
+        }
+        .checkbox-container input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
         .single-card-container {
             margin-top: 20px;
             display: flex;
@@ -327,14 +346,6 @@
             font-weight: bold;
         }
 
-        /* 訂正表スタイリング */
-        .result-score {
-            font-size: 22px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 15px;
-            color: #28a745;
-        }
         .correct-table {
             width: 100%;
             border-collapse: collapse;
@@ -396,7 +407,7 @@
         </div>
 
         <div id="viewScreen" class="screen">
-            <div class="app-banner">
+            <div class="app-banner" id="viewScreenBanner">
                 <button class="home-icon-btn" onclick="goToHome()">🏠</button>
                 <h1 id="viewBookTitle">単語帳の名前</h1>
                 <p class="app-desc" id="viewBookDesc">モードを選択してください</p>
@@ -408,6 +419,9 @@
                 <button class="info-btn" onclick="startBook('shuffle')">めくる（シャッフル）</button>
                 
                 <h2>テストに挑戦（アクティブリコール）</h2>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="fullScreenCheck"> テストを全画面表示にする
+                </label>
                 <button class="success-btn" onclick="startTest('normal')">テスト（作成順）</button>
                 <button class="warning-btn" onclick="startTest('shuffle')">テスト（シャッフル）</button>
             </div>
@@ -433,7 +447,7 @@
 
             <div id="testResultArea" style="display: none; width: 100%;">
                 <div class="section-box">
-                    <div class="result-score" id="resultScoreText">0 / 0 正解！</div>
+                    <div style="font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 15px; color: #28a745;" id="resultScoreText">0 / 0 正解！</div>
                     <div id="wrongTableContainer"></div>
                     <button class="primary-btn" onclick="goToHome()" style="margin-top: 15px; margin-bottom: 0;">ホームに戻る</button>
                 </div>
@@ -455,9 +469,9 @@
     <div class="modal-overlay" id="menuModal" onclick="closeMenuPopup()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-title" id="modalTargetTitle">単語帳の名前</div>
-            <button class="success-btn" onclick="menuAction('append')">カードを追加する</button>
-            <button class="primary-btn" onclick="menuAction('rename')">タイトルを変更する</button>
-            <button class="info-btn" onclick="menuAction('save')">この単語帳のみ保存</button>
+            <button class="secondary-btn" onclick="menuAction('append')">カードを追加する</button>
+            <button class="secondary-btn" onclick="menuAction('rename')">タイトルを変更する</button>
+            <button class="secondary-btn" onclick="menuAction('save')">この単語帳のみ保存</button>
             <button class="danger-btn" onclick="menuAction('delete')">削除する</button>
             <button class="secondary-btn" onclick="closeMenuPopup()" style="margin-top: 10px; margin-bottom: 0;">キャンセル</button>
         </div>
@@ -469,15 +483,13 @@
         let selectedBookName = ""; 
         let isAppendMode = false; 
 
-        // めくるモード用
         let currentPlayCards = []; 
         let currentCardIndex = 0;   
         let isCardFlipped = false;  
 
-        // テストモード用
         let testCards = [];
         let testIndex = 0;
-        let userAnswers = []; // ユーザーの入力ログを保持
+        let userAnswers = []; 
 
         const savedTheme = localStorage.getItem('tangoTheme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
@@ -512,6 +524,8 @@
         }
 
         function goToHome() {
+            exitFullscreen(); // フルスクリーンになっていれば解除
+            document.getElementById('viewScreenBanner').style.display = 'block'; 
             showScreen('homeScreen');
         }
 
@@ -671,6 +685,7 @@
             document.getElementById('viewBookTitle').innerText = bookName;
             document.getElementById('viewBookDesc').innerText = "モードを選択してください";
             
+            document.getElementById('viewScreenBanner').style.display = 'block'; 
             document.getElementById('modeSelectArea').style.display = 'block';
             document.getElementById('cardPlayArea').style.display = 'none';
             document.getElementById('testPlayArea').style.display = 'none';
@@ -679,7 +694,6 @@
             showScreen('viewScreen');
         }
 
-        /* めくる暗記モードの開始 */
         function startBook(mode) {
             const originalCards = allBooks[selectedBookName];
             if (!originalCards || originalCards.length === 0) {
@@ -735,7 +749,7 @@
                     updateCardDisplay();
                 } else {
                     alert("最後のカードです！ホームに戻ります。");
-                    showScreen('homeScreen');
+                    goToHome();
                 }
             }
         }
@@ -759,14 +773,20 @@
             userAnswers = [];
             testIndex = 0;
 
+            // テスト時は【常に】上のバナーを消す
+            document.getElementById('viewScreenBanner').style.display = 'none';
+
+            // チェックが入っていればブラウザを本物の全画面（フルスクリーン）にする
+            const isFullScreen = document.getElementById('fullScreenCheck').checked;
+            if (isFullScreen) {
+                enterFullscreen();
+            }
+
             if (mode === 'shuffle') {
                 for (let i = testCards.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [testCards[i], testCards[j]] = [testCards[j], testCards[i]];
                 }
-                document.getElementById('viewBookDesc').innerText = "テストモード（シャッフル）";
-            } else {
-                document.getElementById('viewBookDesc').innerText = "テストモード（作成順）";
             }
 
             document.getElementById('modeSelectArea').style.display = 'none';
@@ -788,28 +808,26 @@
             const inputField = document.getElementById('testAnswerInput');
             const ans = inputField.value.trim();
             
-            // ユーザーの入力を記録（空欄でもそのまま次へ進む）
             userAnswers.push(ans);
 
             if (testIndex < testCards.length - 1) {
                 testIndex++;
                 updateTestDisplay();
             } else {
-                // すべて解き終わったら結果発表
                 endTestAndShowResult();
             }
         }
 
         function endTestAndShowResult() {
+            exitFullscreen(); // テスト終了時にフルスクリーンを解除
+            document.getElementById('viewScreenBanner').style.display = 'block'; // 結果発表時はバナー（結果案内用）を復活
             document.getElementById('testPlayArea').style.display = 'none';
             document.getElementById('testResultArea').style.display = 'block';
-            document.getElementById('viewBookDesc').innerText = "テスト結果発表";
 
             let correctCount = 0;
             const tableContainer = document.getElementById('wrongTableContainer');
             tableContainer.innerHTML = '';
 
-            // 訂正表の生成
             const table = document.createElement('table');
             table.className = 'correct-table';
             table.innerHTML = `
@@ -823,7 +841,7 @@
 
             testCards.forEach((card, i) => {
                 const uAns = userAnswers[i];
-                const isCorrect = (uAns.toLowerCase() === card.back.trim().toLowerCase()); // 大文字小文字の違いは許容
+                const isCorrect = (uAns.toLowerCase() === card.back.trim().toLowerCase());
                 
                 if (isCorrect) correctCount++;
 
@@ -841,7 +859,34 @@
             tableContainer.appendChild(table);
         }
 
-        /* ファイル管理・セーブ周り */
+        /* 🖥️ フルスクリーン制御用関数 */
+        function enterFullscreen() {
+            const docElm = document.documentElement;
+            if (docElm.requestFullscreen) {
+                docElm.requestFullscreen();
+            } else if (docElm.mozRequestFullScreen) { /* Firefox */
+                docElm.mozRequestFullScreen();
+            } else if (docElm.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+                docElm.webkitRequestFullscreen();
+            } else if (docElm.msRequestFullscreen) { /* IE/Edge */
+                docElm.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
         function saveToFile(bookName) {
             const dataStr = JSON.stringify(allBooks[bookName], null, 2);
             downloadJson(dataStr, `${bookName}.json`);
