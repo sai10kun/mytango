@@ -37,6 +37,21 @@
             --menu-hover: #3a3b3c;
         }
 
+        /* ✨ アニメーション定義 (超軽量キーフレーム) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes cardFlip {
+            0% { transform: scaleX(1); }
+            50% { transform: scaleX(0); }
+            100% { transform: scaleX(1); }
+        }
+
         body {
             font-family: sans-serif;
             background-color: var(--bg-color);
@@ -65,6 +80,7 @@
             margin-bottom: 20px;
             position: relative;
             border: 1px solid var(--border-color);
+            animation: fadeIn 0.4s ease-out; /* ✨ じわっと登場 */
         }
         .app-banner h1 {
             font-size: 24px;
@@ -94,7 +110,9 @@
             width: auto;
             height: auto;
             font-weight: normal;
+            transition: transform 0.2s;
         }
+        .hamburger-btn:hover { transform: scale(1.1); }
         .hamburger-btn:active { transform: scale(0.9); }
 
         h2 {
@@ -106,8 +124,12 @@
             border-left: 4px solid #007bff;
         }
 
+        /* ✨ 画面切り替え時に心地よくフェードイン */
         .screen { display: none; }
-        .screen.active { display: block; }
+        .screen.active { 
+            display: block; 
+            animation: fadeIn 0.35s ease-out forwards;
+        }
 
         .home-icon-btn {
             position: absolute;
@@ -124,8 +146,12 @@
             margin: 0;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 10;
+            transition: transform 0.2s, background-color 0.2s;
         }
+        .home-icon-btn:hover { transform: translateY(-2px); }
+        .home-icon-btn:active { transform: translateY(0); }
 
+        /* ✨ すべてのボタンに「ぷにっ」とした手応えを追加 */
         button {
             width: 100%;
             padding: 14px;
@@ -135,9 +161,15 @@
             border-radius: 8px;
             cursor: pointer;
             margin-bottom: 10px;
-            transition: transform 0.1s, background-color 0.3s;
+            transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
         }
-        button:active { transform: scale(0.98); }
+        button:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        button:active { 
+            transform: scale(0.95); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         
         .primary-btn { background-color: #007bff; color: white; }
         .success-btn { background-color: #28a745; color: white; }
@@ -159,6 +191,7 @@
             margin-bottom: 10px;
         }
 
+        /* ✨ リストアイテムが出るときも綺麗に */
         .tango-book-item {
             background: var(--bg-color);
             padding: 12px;
@@ -170,6 +203,11 @@
             align-items: center;
             font-weight: bold;
             font-size: 16px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .tango-book-item:hover {
+            transform: translateX(4px);
+            background-color: var(--box-bg);
         }
         
         .menu-btn {
@@ -178,9 +216,12 @@
             cursor: pointer;
             padding: 0 10px;
             user-select: none;
+            transition: transform 0.2s;
         }
+        .menu-btn:hover { transform: scale(1.2); }
 
-        .modal-overlay {
+        /* ✨ 背景オーバーレイのフェード */
+        .modal-overlay, .drawer-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -188,24 +229,17 @@
             width: 100%;
             height: 100%;
             background-color: var(--overlay-bg);
-            justify-content: center;
-            align-items: center;
             z-index: 100;
+            opacity: 0;
+            transition: opacity 0.25s ease;
         }
-        .modal-overlay.active { display: flex; }
-        
-        .drawer-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--overlay-bg);
-            z-index: 200;
+        .modal-overlay.active, .drawer-overlay.active { 
+            display: flex; 
+            opacity: 1;
         }
         .drawer-overlay.active { display: block; }
 
+        /* ✨ ドロワーメニューのスライドイン */
         .drawer-content {
             position: fixed;
             top: 0;
@@ -215,7 +249,7 @@
             background: var(--box-bg);
             border-right: 1px solid var(--border-color);
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-            transition: left 0.3s ease;
+            transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 201;
             padding: 20px 0;
             box-sizing: border-box;
@@ -239,11 +273,12 @@
             font-weight: bold;
             color: var(--text-color);
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, padding-left 0.2s;
             user-select: none;
         }
         .drawer-item:hover {
             background-color: var(--menu-hover);
+            padding-left: 26px;
         }
         .drawer-item-close {
             margin-top: auto;
@@ -252,6 +287,7 @@
             padding-top: 15px;
         }
 
+        /* ✨ ポップアップメニューのバウンス表示 */
         .modal-content {
             background: var(--box-bg);
             border: 1px solid var(--border-color);
@@ -261,6 +297,11 @@
             max-width: 320px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
         }
         .modal-title {
             font-size: 16px;
@@ -286,6 +327,12 @@
             color: var(--text-color);
             border-radius: 6px;
             box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
         }
 
         .checkbox-container {
@@ -314,12 +361,14 @@
             align-items: center;
             width: 100%;
         }
+        
+        /* ✨ カードに陰影と滑らかなホバーアニメを追加 */
         .card {
             background-color: var(--box-bg);
             border: 2px solid var(--border-color);
             color: var(--text-color);
             border-radius: 14px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
             width: 100%;
             height: 180px;
             display: flex;
@@ -333,12 +382,24 @@
             user-select: none;
             word-break: break-all;
             box-sizing: border-box;
-            transition: background-color 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+        }
+        .card:active {
+            transform: translateY(-1px);
         }
         .card.back {
             background-color: var(--card-back-bg);
             color: var(--card-back-text);
         }
+        /* めくった瞬間に走る軽量アニメ */
+        .card.flipping {
+            animation: cardFlip 0.25s ease-in-out;
+        }
+        
         .card-progress {
             font-size: 14px;
             color: var(--text-sub);
@@ -511,10 +572,14 @@
         }
 
         function openBannerMenu() {
-            document.getElementById('bannerMenuModal').classList.add('active');
+            const modal = document.getElementById('bannerMenuModal');
+            modal.style.display = 'block';
+            setTimeout(() => modal.classList.add('active'), 10);
         }
         function closeBannerMenu() {
-            document.getElementById('bannerMenuModal').classList.remove('active');
+            const modal = document.getElementById('bannerMenuModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 250);
         }
 
         function showScreen(screenId) {
@@ -524,7 +589,7 @@
         }
 
         function goToHome() {
-            exitFullscreen(); // フルスクリーンになっていれば解除
+            exitFullscreen(); 
             document.getElementById('viewScreenBanner').style.display = 'block'; 
             showScreen('homeScreen');
         }
@@ -590,12 +655,18 @@
         function openMenuPopup(bookName) {
             selectedBookName = bookName;
             document.getElementById('modalTargetTitle').innerText = bookName;
-            document.getElementById('menuModal').classList.add('active');
+            const modal = document.getElementById('menuModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
         }
 
         function closeMenuPopup() {
-            document.getElementById('menuModal').classList.remove('active');
-            selectedBookName = "";
+            const modal = document.getElementById('menuModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                selectedBookName = "";
+            }, 250);
         }
 
         function menuAction(type) {
@@ -727,13 +798,19 @@
 
             document.getElementById('cardProgress').innerText = `${currentCardIndex + 1} / ${currentPlayCards.length}`;
 
-            if (!isCardFlipped) {
-                cardElement.innerText = currentCard.front;
-                cardElement.classList.remove('back');
-            } else {
-                cardElement.innerText = currentCard.back;
-                cardElement.classList.add('back');
-            }
+            // ✨ カードめくり時に一瞬アニメクラスを付与
+            cardElement.classList.add('flipping');
+            setTimeout(() => {
+                if (!isCardFlipped) {
+                    cardElement.innerText = currentCard.front;
+                    cardElement.classList.remove('back');
+                } else {
+                    cardElement.innerText = currentCard.back;
+                    cardElement.classList.add('back');
+                }
+            }, 120); 
+
+            setTimeout(() => cardElement.classList.remove('flipping'), 250);
 
             document.getElementById('prevBtn').style.visibility = (currentCardIndex === 0) ? 'hidden' : 'visible';
         }
@@ -762,7 +839,6 @@
             }
         }
 
-        /* 📝 テストモードの実装 */
         function startTest(mode) {
             const originalCards = allBooks[selectedBookName];
             if (!originalCards || originalCards.length === 0) {
@@ -773,10 +849,8 @@
             userAnswers = [];
             testIndex = 0;
 
-            // テスト時は【常に】上のバナーを消す
             document.getElementById('viewScreenBanner').style.display = 'none';
 
-            // チェックが入っていればブラウザを本物の全画面（フルスクリーン）にする
             const isFullScreen = document.getElementById('fullScreenCheck').checked;
             if (isFullScreen) {
                 enterFullscreen();
@@ -819,8 +893,8 @@
         }
 
         function endTestAndShowResult() {
-            exitFullscreen(); // テスト終了時にフルスクリーンを解除
-            document.getElementById('viewScreenBanner').style.display = 'block'; // 結果発表時はバナー（結果案内用）を復活
+            exitFullscreen(); 
+            document.getElementById('viewScreenBanner').style.display = 'block'; 
             document.getElementById('testPlayArea').style.display = 'none';
             document.getElementById('testResultArea').style.display = 'block';
 
@@ -859,16 +933,15 @@
             tableContainer.appendChild(table);
         }
 
-        /* 🖥️ フルスクリーン制御用関数 */
         function enterFullscreen() {
             const docElm = document.documentElement;
             if (docElm.requestFullscreen) {
                 docElm.requestFullscreen();
-            } else if (docElm.mozRequestFullScreen) { /* Firefox */
+            } else if (docElm.mozRequestFullScreen) { 
                 docElm.mozRequestFullScreen();
-            } else if (docElm.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+            } else if (docElm.webkitRequestFullscreen) { 
                 docElm.webkitRequestFullscreen();
-            } else if (docElm.msRequestFullscreen) { /* IE/Edge */
+            } else if (docElm.msRequestFullscreen) { 
                 docElm.msRequestFullscreen();
             }
         }
