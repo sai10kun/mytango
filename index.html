@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>らくらく単語帳</title>
+    <title>Tangoo (軽量版)</title>
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -13,7 +13,6 @@
             --border-color: #ccc;
             --card-back-bg: #fff9c4;
             --card-back-text: #333;
-            --file-box-bg: #e3f2fd;
             --overlay-bg: rgba(0, 0, 0, 0.4);
             --banner-bg: white;
             --banner-text: #333;
@@ -29,7 +28,6 @@
             --border-color: #3a3b3c;
             --card-back-bg: #3a3b3c;
             --card-back-text: #fff9c4;
-            --file-box-bg: #1e293b;
             --overlay-bg: rgba(0, 0, 0, 0.6);
             --banner-bg: #242526;
             --banner-text: #e4e6eb;
@@ -37,7 +35,6 @@
             --menu-hover: #3a3b3c;
         }
 
-        /* アニメーション定義 */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -157,13 +154,8 @@
             margin-bottom: 10px;
             transition: transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, box-shadow 0.2s;
         }
-        button:hover {
-            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-        }
-        button:active { 
-            transform: scale(0.95); 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+        button:hover { box-shadow: 0 4px 10px rgba(0,0,0,0.12); }
+        button:active { transform: scale(0.95); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
         .primary-btn { background-color: #007bff; color: white; }
         .success-btn { background-color: #28a745; color: white; }
@@ -181,9 +173,7 @@
             border: 1px solid var(--border-color);
         }
 
-        .book-list-container {
-            margin-bottom: 10px;
-        }
+        .book-list-container { margin-bottom: 10px; }
 
         .tango-book-item {
             background: var(--bg-color);
@@ -198,238 +188,76 @@
             font-size: 16px;
             transition: transform 0.2s, background-color 0.2s;
         }
-        .tango-book-item:hover {
-            transform: translateX(4px);
-            background-color: var(--box-bg);
-        }
+        .tango-book-item:hover { transform: translateX(4px); background-color: var(--box-bg); }
         
-        .menu-btn {
-            color: var(--text-color);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0 10px;
-            user-select: none;
-            transition: transform 0.2s;
-        }
+        .menu-btn { color: var(--text-color); font-size: 20px; cursor: pointer; padding: 0 10px; user-select: none; transition: transform 0.2s; }
         .menu-btn:hover { transform: scale(1.2); }
 
-        /* ✨ オーバーレイの配置をきれいに中央揃えに修正 */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--overlay-bg);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.22s ease;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--overlay-bg); z-index: 100; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.22s ease;
         }
-        .modal-overlay.active { 
-            opacity: 1;
-        }
+        .modal-overlay.active { opacity: 1; }
         
         .drawer-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--overlay-bg);
-            z-index: 200;
-            opacity: 0;
-            transition: opacity 0.25s ease;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--overlay-bg); z-index: 200; opacity: 0; transition: opacity 0.25s ease;
         }
-        .drawer-overlay.active { 
-            opacity: 1;
-        }
+        .drawer-overlay.active { opacity: 1; }
 
         .drawer-content {
-            position: fixed;
-            top: 0;
-            left: -280px;
-            width: 280px;
-            height: 100%;
-            background: var(--box-bg);
-            border-right: 1px solid var(--border-color);
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-            transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 201;
-            padding: 20px 0;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: var(--box-bg); border-right: 1px solid var(--border-color);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1); transition: left 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 201; padding: 20px 0; box-sizing: border-box; display: flex; flex-direction: column;
         }
-        .drawer-overlay.active .drawer-content {
-            left: 0;
-        }
-        .drawer-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            padding: 0 20px 10px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .drawer-overlay.active .drawer-content { left: 0; }
+        .drawer-title { font-size: 18px; font-weight: bold; margin-bottom: 15px; padding: 0 20px 10px 20px; border-bottom: 1px solid var(--border-color); }
 
-        .drawer-item {
-            padding: 15px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: background-color 0.2s, padding-left 0.2s;
-            user-select: none;
-        }
-        .drawer-item:hover {
-            background-color: var(--menu-hover);
-            padding-left: 26px;
-        }
-        .drawer-item-close {
-            margin-top: auto;
-            color: var(--text-sub);
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-        }
+        .drawer-item { padding: 15px 20px; font-size: 15px; font-weight: bold; color: var(--text-color); cursor: pointer; transition: background-color 0.2s, padding-left 0.2s; user-select: none; }
+        .drawer-item:hover { background-color: var(--menu-hover); padding-left: 26px; }
+        .drawer-item-close { margin-top: auto; color: var(--text-sub); border-top: 1px solid var(--border-color); padding-top: 15px; }
 
-        /* ✨ ポップアップがバカでかくならないように修正 */
         .modal-content {
-            background: var(--box-bg);
-            border: 1px solid var(--border-color);
-            padding: 20px;
-            border-radius: 12px;
-            width: 85%;
-            max-width: 320px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center;
-            box-sizing: border-box;
-            transform: scale(0.9);
-            transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            background: var(--box-bg); border: 1px solid var(--border-color); padding: 20px; border-radius: 12px;
+            width: 85%; max-width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
+            box-sizing: border-box; transform: scale(0.9); transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.2);
         }
-        .modal-overlay.active .modal-content {
-            transform: scale(1);
-        }
-        .modal-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 18px;
-            word-break: break-all;
-        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-title { font-size: 18px; font-weight: bold; margin-bottom: 18px; word-break: break-all; }
 
         .input-group { margin-bottom: 15px; }
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--text-sub);
-            margin-bottom: 5px;
-        }
+        .input-group label { display: block; font-size: 13px; font-weight: bold; color: var(--text-sub); margin-bottom: 5px; }
         input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-color);
-            color: var(--text-color);
-            border-radius: 6px;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; font-size: 16px; border: 1px solid var(--border-color);
+            background: var(--bg-color); color: var(--text-color); border-radius: 6px; box-sizing: border-box;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
-        }
+        input[type="text"]:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
 
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--text-sub);
-            cursor: pointer;
-            user-select: none;
-        }
-        .checkbox-container input {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
+        .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; margin-bottom: 15px; font-size: 14px; font-weight: bold; color: var(--text-sub); cursor: pointer; user-select: none; }
+        .checkbox-container input { width: 16px; height: 16px; cursor: pointer; }
 
-        .single-card-container {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
+        .single-card-container { margin-top: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; }
         
         .card {
-            background-color: var(--box-bg);
-            border: 2px solid var(--border-color);
-            color: var(--text-color);
-            border-radius: 14px;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-            width: 100%;
-            height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            padding: 20px;
-            cursor: pointer;
-            user-select: none;
-            word-break: break-all;
-            box-sizing: border-box;
-            transition: transform 0.2s, box-shadow 0.2s;
+            background-color: var(--box-bg); border: 2px solid var(--border-color); color: var(--text-color);
+            border-radius: 14px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); width: 100%; height: 180px;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
+            text-align: center; padding: 20px; cursor: pointer; user-select: none; word-break: break-all;
+            box-sizing: border-box; transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-        }
-        .card:active {
-            transform: translateY(-1px);
-        }
-        .card.back {
-            background-color: var(--card-back-bg);
-            color: var(--card-back-text);
-        }
-        .card.flipping {
-            animation: cardFlip 0.25s ease-in-out;
-        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.12); }
+        .card:active { transform: translateY(-1px); }
+        .card.back { background-color: var(--card-back-bg); color: var(--card-back-text); }
+        .card.flipping { animation: cardFlip 0.25s ease-in-out; }
         
-        .card-progress {
-            font-size: 14px;
-            color: var(--text-sub);
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+        .card-progress { font-size: 14px; color: var(--text-sub); margin-bottom: 10px; font-weight: bold; }
 
-        .correct-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        .correct-table th, .correct-table td {
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            text-align: left;
-            word-break: break-all;
-        }
-        .correct-table th {
-            background-color: var(--bg-color);
-            font-weight: bold;
-        }
+        .correct-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .correct-table th, .correct-table td { border: 1px solid var(--border-color); padding: 8px; text-align: left; word-break: break-all; }
+        .correct-table th { background-color: var(--bg-color); font-weight: bold; }
         .text-danger { color: #dc3545; font-weight: bold; }
         .text-success { color: #28a745; font-weight: bold; }
 
@@ -443,14 +271,15 @@
         <div id="homeScreen" class="screen active">
             <div class="app-banner">
                 <button class="hamburger-btn" onclick="openBannerMenu()">☰</button>
-                <h1>らくらく単語帳</h1>
-                <p class="app-desc">アカウントなしのweb単語帳アプリ</p>
+                <h1>Tangoo</h1>
+                <p class="app-desc">軽量版</p>
             </div>
             
             <div class="section-box">
                 <div id="bookList" class="book-list-container"></div>
-                <button class="success-btn" onclick="saveAllBooks()" style="margin-bottom: 0;">まとめて保存</button>
+                <button class="success-btn" onclick="saveAllBooks()" style="margin-bottom: 0;">まとめてファイル保存</button>
             </div>
+            <a href="https://tangoo-app.github.io" style="display:block; text-align:center; color:var(--text-sub); font-size:14px; text-decoration:none; margin-top:10px;">🏠 ポータルに戻る</a>
         </div>
 
         <div id="inputScreen" class="screen">
@@ -486,7 +315,7 @@
                 <button class="primary-btn" onclick="startBook('normal')">めくる（作成順）</button>
                 <button class="info-btn" onclick="startBook('shuffle')">めくる（シャッフル）</button>
                 
-                <h2>テストに挑戦（アクティブリコール）</h2>
+                <h2>テストに挑戦</h2>
                 <label class="checkbox-container">
                     <input type="checkbox" id="fullScreenCheck"> テストを全画面表示にする
                 </label>
@@ -550,11 +379,9 @@
         let tempCards = [];
         let selectedBookName = ""; 
         let isAppendMode = false; 
-
         let currentPlayCards = []; 
         let currentCardIndex = 0;   
         let isCardFlipped = false;  
-
         let testCards = [];
         let testIndex = 0;
         let userAnswers = []; 
@@ -573,20 +400,16 @@
 
         function updateThemeMenuButton(theme) {
             const btn = document.getElementById('themeMenuBtn');
-            if (btn) {
-                btn.innerText = theme === 'dark' ? 'ライトモードにする ☀️' : 'ダークモードにする 🌙';
-            }
+            if (btn) btn.innerText = theme === 'dark' ? 'ライトモードにする ☀️' : 'ダークモードにする 🌙';
         }
 
         function openBannerMenu() {
             const modal = document.getElementById('bannerMenuModal');
-            modal.style.display = 'block';
-            setTimeout(() => modal.classList.add('active'), 10);
+            modal.style.display = 'block'; setTimeout(() => modal.classList.add('active'), 10);
         }
         function closeBannerMenu() {
             const modal = document.getElementById('bannerMenuModal');
-            modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 250);
+            modal.classList.remove('active'); setTimeout(() => modal.style.display = 'none', 250);
         }
 
         function showScreen(screenId) {
@@ -595,136 +418,75 @@
             if (screenId === 'homeScreen') { renderBookList(); }
         }
 
-        function goToHome() {
-            exitFullscreen(); 
-            document.getElementById('viewScreenBanner').style.display = 'block'; 
-            showScreen('homeScreen');
-        }
+        function goToHome() { exitFullscreen(); document.getElementById('viewScreenBanner').style.display = 'block'; showScreen('homeScreen'); }
 
         function renderBookList() {
-            const bookListDiv = document.getElementById('bookList');
-            bookListDiv.innerHTML = '';
+            const bookListDiv = document.getElementById('bookList'); bookListDiv.innerHTML = '';
             const keys = Object.keys(allBooks);
             if (keys.length === 0) {
                 bookListDiv.innerHTML = '<p style="text-align:center; color:var(--text-sub); font-size:14px; margin: 10px 0;">まだ単語帳がありません。</p>';
                 return;
             }
             keys.forEach(bookName => {
-                const item = document.createElement('div');
-                item.className = 'tango-book-item';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.innerText = `${bookName} (${allBooks[bookName].length})`;
-                nameSpan.style.cursor = 'pointer';
-                nameSpan.onclick = () => openBook(bookName);
-                
-                const menuBtn = document.createElement('span');
-                menuBtn.className = 'menu-btn';
-                menuBtn.innerText = '…';
-                menuBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    openMenuPopup(bookName);
-                };
-
-                item.appendChild(nameSpan);
-                item.appendChild(menuBtn);
-                bookListDiv.appendChild(item);
+                const item = document.createElement('div'); item.className = 'tango-book-item';
+                const nameSpan = document.createElement('span'); nameSpan.innerText = `${bookName} (${allBooks[bookName].length})`;
+                nameSpan.style.cursor = 'pointer'; nameSpan.onclick = () => openBook(bookName);
+                const menuBtn = document.createElement('span'); menuBtn.className = 'menu-btn'; menuBtn.innerText = '…';
+                menuBtn.onclick = (e) => { e.stopPropagation(); openMenuPopup(bookName); };
+                item.appendChild(nameSpan); item.appendChild(menuBtn); bookListDiv.appendChild(item);
             });
         }
 
         function openCreateNew() {
-            isAppendMode = false;
-            selectedBookName = "";
+            isAppendMode = false; selectedBookName = "";
             document.getElementById('inputScreenTitle').innerText = "新しい単語帳を作る";
             document.getElementById('inputScreenSub').innerText = "新しく単語帳を登録します";
             document.getElementById('tempCount').innerText = 'まだカードはありません';
-            tempCards = [];
-            showScreen('inputScreen');
+            tempCards = []; showScreen('inputScreen');
         }
 
-        function menuActionFromDrawer(type) {
-            closeBannerMenu();
-            if (type === 'create') {
-                openCreateNew();
-            }
-        }
-
-        function startAppendToBook(bookName) {
-            isAppendMode = true;
-            selectedBookName = bookName;
-            document.getElementById('inputScreenTitle').innerText = `${selectedBookName} に追加`;
-            document.getElementById('inputScreenSub').innerText = "現在ある単語帳にカードを追加します";
-            document.getElementById('tempCount').innerText = `現在 ${allBooks[selectedBookName].length} 枚保存されている単語帳です`;
-            tempCards = [];
-            showScreen('inputScreen');
-        }
+        function menuActionFromDrawer(type) { closeBannerMenu(); if (type === 'create') { openCreateNew(); } }
 
         function openMenuPopup(bookName) {
-            selectedBookName = bookName;
-            document.getElementById('modalTargetTitle').innerText = bookName;
-            const modal = document.getElementById('menuModal');
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('active'), 10);
+            selectedBookName = bookName; document.getElementById('modalTargetTitle').innerText = bookName;
+            const modal = document.getElementById('menuModal'); modal.style.display = 'flex'; setTimeout(() => modal.classList.add('active'), 10);
         }
 
         function closeMenuPopup() {
-            const modal = document.getElementById('menuModal');
-            modal.classList.remove('active');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                selectedBookName = "";
-            }, 230);
+            const modal = document.getElementById('menuModal'); modal.classList.remove('active'); setTimeout(() => { modal.style.display = 'none'; selectedBookName = ""; }, 230);
         }
 
         function menuAction(type) {
-            const bookName = selectedBookName;
-            closeMenuPopup();
-
+            const bookName = selectedBookName; closeMenuPopup();
             if (type === 'append') {
-                startAppendToBook(bookName);
+                isAppendMode = true;
+                document.getElementById('inputScreenTitle').innerText = `${bookName} に追加`;
+                document.getElementById('inputScreenSub').innerText = "現在ある単語帳にカードを追加します";
+                document.getElementById('tempCount').innerText = `現在 ${allBooks[bookName].length} 枚保存されている単語帳です`;
+                tempCards = []; showScreen('inputScreen');
             } else if (type === 'rename') {
                 const newName = prompt("新しい単語帳の名前を入力してください：", bookName);
                 if (newName && newName.trim() !== "" && newName !== bookName) {
-                    if (allBooks[newName]) {
-                        alert("すでに同じ名前の単語帳があります。"); return;
-                    }
-                    allBooks[newName] = allBooks[bookName];
-                    delete allBooks[bookName];
-                    saveData();
-                    renderBookList();
-                    alert("タイトルを変更しました！");
+                    if (allBooks[newName]) { alert("すでに同じ名前の単語帳があります。"); return; }
+                    allBooks[newName] = allBooks[bookName]; delete allBooks[bookName]; saveData(); renderBookList();
                 }
             } else if (type === 'delete') {
-                if (confirm(`「${bookName}」をアプリ内から削除しますか？`)) {
-                    delete allBooks[bookName];
-                    saveData();
-                    renderBookList();
-                }
-            } else if (type === 'save') {
-                saveToFile(bookName);
-            }
+                if (confirm(`「${bookName}」を削除しますか？`)) { delete allBooks[bookName]; saveData(); renderBookList(); }
+            } else if (type === 'save') { saveToFile(bookName); }
         }
 
         function addTempCard() {
-            const front = document.getElementById('frontInput');
-            const back = document.getElementById('backInput');
-            if (front.value.trim() === '' || back.value.trim() === '') {
-                alert('オモテとウラの両方を入力してね！'); return;
-            }
+            const front = document.getElementById('frontInput'); const back = document.getElementById('backInput');
+            if (front.value.trim() === '' || back.value.trim() === '') { alert('オモテとウラの両方を入力してね！'); return; }
             tempCards.push({ front: front.value, back: back.value });
             front.value = ''; back.value = ''; front.focus();
-            
             const baseCount = isAppendMode ? allBooks[selectedBookName].length : 0;
             document.getElementById('tempCount').innerText = `今回新しく ${tempCards.length} 枚追加中 (合計: ${baseCount + tempCards.length} 枚)`;
         }
 
         function finishBook() {
-            const front = document.getElementById('frontInput');
-            const back = document.getElementById('backInput');
-            if (front.value.trim() !== '' && back.value.trim() !== '') {
-                tempCards.push({ front: front.value, back: back.value });
-            }
-            
+            const front = document.getElementById('frontInput'); const back = document.getElementById('backInput');
+            if (front.value.trim() !== '' && back.value.trim() !== '') { tempCards.push({ front: front.value, back: back.value }); }
             if (tempCards.length === 0) { alert('最低1枚はカードを追加してね！'); return; }
 
             if (isAppendMode) {
@@ -732,318 +494,140 @@
                 alert(`「${selectedBookName}」にカードを追加しました！`);
             } else {
                 const bookName = prompt('この単語帳の名前を入力してください：');
-                if (!bookName || bookName.trim() === '') {
-                    alert('名前が入力されなかったため、保存を中止しました。'); return;
-                }
-                if (allBooks[bookName]) {
-                    if (!confirm(`「${bookName}」はすでに存在します。追加（合体）しますか？`)) return;
-                    allBooks[bookName] = allBooks[bookName].concat(tempCards);
-                } else {
-                    allBooks[bookName] = tempCards;
-                }
-                alert(`単語帳「${bookName}」をアプリ内に保存しました！`);
+                if (!bookName || bookName.trim() === '') { alert('名前が入力されなかったため、保存を中止しました。'); return; }
+                allBooks[bookName] = allBooks[bookName] ? allBooks[bookName].concat(tempCards) : tempCards;
+                alert(`単語帳「${bookName}」を保存しました！`);
             }
-
-            saveData();
-            tempCards = []; front.value = ''; back.value = '';
-            showScreen('homeScreen');
+            saveData(); tempCards = []; front.value = ''; back.value = ''; showScreen('homeScreen');
         }
 
-        function cancelCreation() {
-            if (confirm('作りかけの入力を破棄してホームに戻りますか？')) {
-                tempCards = [];
-                document.getElementById('frontInput').value = '';
-                document.getElementById('backInput').value = '';
-                showScreen('homeScreen');
-            }
-        }
+        function cancelCreation() { if (confirm('作りかけの入力を破棄してホームに戻りますか？')) { tempCards = []; showScreen('homeScreen'); } }
 
         function openBook(bookName) {
-            selectedBookName = bookName;
-            document.getElementById('viewBookTitle').innerText = bookName;
-            document.getElementById('viewBookDesc').innerText = "モードを選択してください";
-            
-            document.getElementById('viewScreenBanner').style.display = 'block'; 
-            document.getElementById('modeSelectArea').style.display = 'block';
-            document.getElementById('cardPlayArea').style.display = 'none';
-            document.getElementById('testPlayArea').style.display = 'none';
-            document.getElementById('testResultArea').style.display = 'none';
-            
+            selectedBookName = bookName; document.getElementById('viewBookTitle').innerText = bookName;
+            document.getElementById('viewScreenBanner').style.display = 'block'; document.getElementById('modeSelectArea').style.display = 'block';
+            document.getElementById('cardPlayArea').style.display = 'none'; document.getElementById('testPlayArea').style.display = 'none'; document.getElementById('testResultArea').style.display = 'none';
             showScreen('viewScreen');
         }
 
         function startBook(mode) {
-            const originalCards = allBooks[selectedBookName];
-            if (!originalCards || originalCards.length === 0) {
-                alert("カードが入っていません。"); return;
-            }
-
-            currentPlayCards = JSON.parse(JSON.stringify(originalCards));
-
+            currentPlayCards = JSON.parse(JSON.stringify(allBooks[selectedBookName]));
             if (mode === 'shuffle') {
                 for (let i = currentPlayCards.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [currentPlayCards[i], currentPlayCards[j]] = [currentPlayCards[j], currentPlayCards[i]];
+                    const j = Math.floor(Math.random() * (i + 1)); [currentPlayCards[i], currentPlayCards[j]] = [currentPlayCards[j], currentPlayCards[i]];
                 }
-                document.getElementById('viewBookDesc').innerText = "めくるモード（シャッフル）";
-            } else {
-                document.getElementById('viewBookDesc').innerText = "めくるモード（作成順）";
             }
-
-            currentCardIndex = 0;
-            isCardFlipped = false;
-
-            document.getElementById('modeSelectArea').style.display = 'none';
-            document.getElementById('cardPlayArea').style.display = 'flex';
-
+            currentCardIndex = 0; isCardFlipped = false;
+            document.getElementById('modeSelectArea').style.display = 'none'; document.getElementById('cardPlayArea').style.display = 'flex';
             updateCardDisplay();
         }
 
         function updateCardDisplay() {
-            const cardElement = document.getElementById('mainCard');
-            const currentCard = currentPlayCards[currentCardIndex];
-
+            const cardElement = document.getElementById('mainCard'); const currentCard = currentPlayCards[currentCardIndex];
             document.getElementById('cardProgress').innerText = `${currentCardIndex + 1} / ${currentPlayCards.length}`;
-
             cardElement.classList.add('flipping');
             setTimeout(() => {
-                if (!isCardFlipped) {
-                    cardElement.innerText = currentCard.front;
-                    cardElement.classList.remove('back');
-                } else {
-                    cardElement.innerText = currentCard.back;
-                    cardElement.classList.add('back');
-                }
-            }, 120); 
-
+                if (!isCardFlipped) { cardElement.innerText = currentCard.front; cardElement.classList.remove('back'); }
+                else { cardElement.innerText = currentCard.back; cardElement.classList.add('back'); }
+            }, 120);
             setTimeout(() => cardElement.classList.remove('flipping'), 250);
-
             document.getElementById('prevBtn').style.visibility = (currentCardIndex === 0) ? 'hidden' : 'visible';
         }
 
         function handleCardClick() {
-            if (!isCardFlipped) {
-                isCardFlipped = true;
-                updateCardDisplay();
-            } else {
-                if (currentCardIndex < currentPlayCards.length - 1) {
-                    currentCardIndex++;
-                    isCardFlipped = false;
-                    updateCardDisplay();
-                } else {
-                    alert("最後のカードです！ホームに戻ります。");
-                    goToHome();
-                }
+            if (!isCardFlipped) { isCardFlipped = true; updateCardDisplay(); }
+            else {
+                if (currentCardIndex < currentPlayCards.length - 1) { currentCardIndex++; isCardFlipped = false; updateCardDisplay(); }
+                else { alert("最後のカードです！"); goToHome(); }
             }
         }
 
-        function prevCard() {
-            if (currentCardIndex > 0) {
-                currentCardIndex--;
-                isCardFlipped = false; 
-                updateCardDisplay();
-            }
-        }
+        function prevCard() { if (currentCardIndex > 0) { currentCardIndex--; isCardFlipped = false; updateCardDisplay(); } }
 
         function startTest(mode) {
-            const originalCards = allBooks[selectedBookName];
-            if (!originalCards || originalCards.length === 0) {
-                alert("カードが入っていません。"); return;
-            }
-
-            testCards = JSON.parse(JSON.stringify(originalCards));
-            userAnswers = [];
-            testIndex = 0;
-
+            testCards = JSON.parse(JSON.stringify(allBooks[selectedBookName]));
+            userAnswers = []; testIndex = 0;
             document.getElementById('viewScreenBanner').style.display = 'none';
-
-            const isFullScreen = document.getElementById('fullScreenCheck').checked;
-            if (isFullScreen) {
-                enterFullscreen();
-            }
-
+            if (document.getElementById('fullScreenCheck').checked) enterFullscreen();
             if (mode === 'shuffle') {
                 for (let i = testCards.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [testCards[i], testCards[j]] = [testCards[j], testCards[i]];
+                    const j = Math.floor(Math.random() * (i + 1)); [testCards[i], testCards[j]] = [testCards[j], testCards[i]];
                 }
             }
-
-            document.getElementById('modeSelectArea').style.display = 'none';
-            document.getElementById('testPlayArea').style.display = 'flex';
-            document.getElementById('testAnswerInput').value = '';
-
+            document.getElementById('modeSelectArea').style.display = 'none'; document.getElementById('testPlayArea').style.display = 'flex';
             updateTestDisplay();
         }
 
         function updateTestDisplay() {
             document.getElementById('testProgress').innerText = `${testIndex + 1} / ${testCards.length}`;
             document.getElementById('testCard').innerText = testCards[testIndex].front;
-            const inputField = document.getElementById('testAnswerInput');
-            inputField.value = '';
-            inputField.focus();
+            const inputField = document.getElementById('testAnswerInput'); inputField.value = ''; inputField.focus();
         }
 
         function submitTestAnswer() {
-            const inputField = document.getElementById('testAnswerInput');
-            const ans = inputField.value.trim();
-            
-            userAnswers.push(ans);
-
-            if (testIndex < testCards.length - 1) {
-                testIndex++;
-                updateTestDisplay();
-            } else {
-                endTestAndShowResult();
-            }
+            const inputField = document.getElementById('testAnswerInput'); userAnswers.push(inputField.value.trim());
+            if (testIndex < testCards.length - 1) { testIndex++; updateTestDisplay(); }
+            else { endTestAndShowResult(); }
         }
 
         function endTestAndShowResult() {
-            exitFullscreen(); 
-            document.getElementById('viewScreenBanner').style.display = 'block'; 
-            document.getElementById('testPlayArea').style.display = 'none';
-            document.getElementById('testResultArea').style.display = 'block';
-
-            let correctCount = 0;
-            const tableContainer = document.getElementById('wrongTableContainer');
-            tableContainer.innerHTML = '';
-
-            const table = document.createElement('table');
-            table.className = 'correct-table';
-            table.innerHTML = `
-                <tr>
-                    <th>問題(オモテ)</th>
-                    <th>あなたの回答</th>
-                    <th>正解(ウラ)</th>
-                    <th>判定</th>
-                </tr>
-            `;
-
+            exitFullscreen(); document.getElementById('viewScreenBanner').style.display = 'block';
+            document.getElementById('testPlayArea').style.display = 'none'; document.getElementById('testResultArea').style.display = 'block';
+            let correctCount = 0; const tableContainer = document.getElementById('wrongTableContainer'); tableContainer.innerHTML = '';
+            const table = document.createElement('table'); table.className = 'correct-table';
+            table.innerHTML = `<tr><th>問題</th><th>あなたの回答</th><th>正解</th><th>判定</th></tr>`;
             testCards.forEach((card, i) => {
-                const uAns = userAnswers[i];
-                const isCorrect = (uAns.toLowerCase() === card.back.trim().toLowerCase());
-                
+                const uAns = userAnswers[i]; const isCorrect = (uAns.toLowerCase() === card.back.trim().toLowerCase());
                 if (isCorrect) correctCount++;
-
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${card.front}</td>
-                    <td class="${isCorrect ? 'text-success' : 'text-danger'}">${uAns || '(空欄)'}</td>
-                    <td>${card.back}</td>
-                    <td class="${isCorrect ? 'text-success' : 'text-danger'}">${isCorrect ? '○' : '×'}</td>
-                `;
+                row.innerHTML = `<td>${card.front}</td><td class="${isCorrect ? 'text-success' : 'text-danger'}">${uAns || '(空欄)'}</td><td>${card.back}</td><td class="${isCorrect ? 'text-success' : 'text-danger'}">${isCorrect ? '○' : '×'}</td>`;
                 table.appendChild(row);
             });
-
-            document.getElementById('resultScoreText').innerText = `${testCards.length}問中 ${correctCount}問正解！`;
-            tableContainer.appendChild(table);
+            document.getElementById('resultScoreText').innerText = `${testCards.length}問中 ${correctCount}問正解！`; tableContainer.appendChild(table);
         }
 
         function enterFullscreen() {
-            const docElm = document.documentElement;
-            if (docElm.requestFullscreen) {
-                docElm.requestFullscreen();
-            } else if (docElm.mozRequestFullScreen) { 
-                docElm.mozRequestFullScreen();
-            } else if (docElm.webkitRequestFullscreen) { 
-                docElm.webkitRequestFullscreen();
-            } else if (docElm.msRequestFullscreen) { 
-                docElm.msRequestFullscreen();
-            }
+            const de = document.documentElement;
+            if (de.requestFullscreen) de.requestFullscreen();
+            else if (de.webkitRequestFullscreen) de.webkitRequestFullscreen();
         }
-
         function exitFullscreen() {
-            if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
         }
 
-        function saveToFile(bookName) {
-            const dataStr = JSON.stringify(allBooks[bookName], null, 2);
-            downloadJson(dataStr, `${bookName}.json`);
-        }
-
-        function saveAllBooks() {
-            const keys = Object.keys(allBooks);
-            if (keys.length === 0) {
-                alert("保存する単語帳がありません。"); return;
-            }
-            const dataStr = JSON.stringify(allBooks, null, 2);
-            downloadJson(dataStr, "rkrktng.json");
-        }
-
+        function saveToFile(bookName) { downloadJson(JSON.stringify(allBooks[bookName], null, 2), `${bookName}.json`); }
+        function saveAllBooks() { if (Object.keys(allBooks).length === 0) return; downloadJson(JSON.stringify(allBooks, null, 2), "tangoo_lite_data.json"); }
         function downloadJson(dataStr, fileName) {
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob);
+            const link = document.createElement('a'); link.href = url; link.download = fileName;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
         }
 
-        function triggerFileInput() {
-            closeBannerMenu();
-            document.getElementById('fileInput').click();
-        }
-
+        function triggerFileInput() { closeBannerMenu(); document.getElementById('fileInput').click(); }
         function loadFromFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const fileNameNoExt = file.name.replace('.json', '');
-            const reader = new FileReader();
+            const file = event.target.files[0]; if (!file) return;
+            const fileNameNoExt = file.name.replace('.json', ''); const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const imported = JSON.parse(e.target.result);
-                    
                     if (Array.isArray(imported)) {
-                        if (allBooks[fileNameNoExt]) {
-                            if (!confirm(`すでに「${fileNameNoExt}」という単語帳があります。上書きしますか？（キャンセルすると合体します）`)) {
-                                allBooks[fileNameNoExt] = allBooks[fileNameNoExt].concat(imported);
-                            } else {
-                                allBooks[fileNameNoExt] = imported;
-                            }
-                        } else {
-                            allBooks[fileNameNoExt] = imported;
-                        }
+                        allBooks[fileNameNoExt] = allBooks[fileNameNoExt] ? allBooks[fileNameNoExt].concat(imported) : imported;
                     } else if (typeof imported === 'object' && imported !== null) {
-                        if (confirm("まとめて保存されたファイルを読み込みます。既存のデータに上書き追加しますか？")) {
-                            allBooks = Object.assign({}, allBooks, imported);
-                        } else {
-                            return;
-                        }
-                    } else {
-                        alert('ファイルの形式が正しくありません。'); return;
+                        allBooks = Object.assign({}, allBooks, imported);
                     }
-
-                    saveData();
-                    renderBookList();
-                    alert("ファイルを読み込みました！");
-                } catch (err) {
-                    alert('ファイルの読み込みに失敗しました。');
-                }
+                    saveData(); renderBookList(); alert("ファイルを読み込みました！");
+                } catch (err) { alert('読み込みに失敗しました。'); }
                 event.target.value = '';
             };
             reader.readAsText(file);
         }
 
-        function saveData() {
-            localStorage.setItem('myTangoData', JSON.stringify(allBooks));
-        }
+        function saveData() { localStorage.setItem('myTangoData', JSON.stringify(allBooks)); }
 
         renderBookList();
     </script>
-
 </body>
 </html>
