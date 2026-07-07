@@ -279,7 +279,6 @@
                 <div id="bookList" class="book-list-container"></div>
                 <button class="success-btn" onclick="saveAllBooks()" style="margin-bottom: 0;">まとめてファイル保存</button>
             </div>
-            <a href="https://tangoo-app.github.io" style="display:block; text-align:center; color:var(--text-sub); font-size:14px; text-decoration:none; margin-top:10px;">🏠 ポータルに戻る</a>
         </div>
 
         <div id="inputScreen" class="screen">
@@ -359,6 +358,7 @@
             <div class="drawer-item" onclick="triggerFileInput()">端末から追加 (.json)</div>
             <input type="file" id="fileInput" accept=".json" onchange="loadFromFile(event)">
             <div class="drawer-item" onclick="toggleTheme()" id="themeMenuBtn">ダークモードにする 🌙</div>
+            <div class="drawer-item" onclick="location.href='https://tangoo-app.github.io'">🏠 ポータルに戻る</div>
             <div class="drawer-item drawer-item-close" onclick="closeBannerMenu()">閉じる</div>
         </div>
     </div>
